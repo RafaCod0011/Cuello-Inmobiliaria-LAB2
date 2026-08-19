@@ -1,7 +1,9 @@
+using Cuello_Inmobiliaria_LAB2.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IRepositorioPropietario, RepositorioPropietario>();
 
 var app = builder.Build();
 
