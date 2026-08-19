@@ -48,5 +48,49 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				throw;
 			}
 		}
+
+		// GET: Propietario/Create
+        public ActionResult Create()
+        {
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {//poner breakpoints para detectar errores
+                logger.LogError(ex, "Error en Create");
+                throw;
+            }
+        }
+ 
+        // POST: Propietario/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Propietario propietario)
+        {
+            try
+            {
+                if (ModelState.IsValid)// Pregunta si el modelo es válido
+                {
+                    // Reemplazo de clave plana por clave con hash
+                    propietario.Clave = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                            password: propietario.Clave,
+                            salt: System.Text.Encoding.ASCII.GetBytes(config["Salt"]),
+                            prf: KeyDerivationPrf.HMACSHA1,
+                            iterationCount: 1000,
+                            numBytesRequested: 256 / 8));
+                    repositorio.Alta(propietario);
+                    TempData["Id"] = propietario.IdPropietario;
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                    return View(propietario);
+            }
+            catch (Exception ex)
+            {//poner breakpoints para detectar errores
+                logger.LogError(ex, "Error en Create");
+                throw;
+            }
+        }
    }     
 }
