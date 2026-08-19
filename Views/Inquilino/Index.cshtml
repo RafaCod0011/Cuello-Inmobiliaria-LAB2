@@ -1,0 +1,98 @@
+@model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.Inquilino>
+
+@{
+    ViewData["Title"] = "Inquilinos";
+    var Pagina = ViewBag.Pagina ?? 1;
+    var TotalPaginas = ViewBag.TotalPaginas ?? 1;
+}
+
+<h1>
+    Inquilinos
+    <div class="btn-group pull-right">
+        <a class="btn btn-primary" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
+    </div>
+</h1>
+
+@if (ViewBag.Mensaje != null)
+{
+    <div class="alert alert-success">@ViewBag.Mensaje</div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.IdInquilino)</th>
+            <th>@Html.DisplayNameFor(model => model.Nombre)</th>
+            <th>@Html.DisplayNameFor(model => model.Apellido)</th>
+            <th>@Html.DisplayNameFor(model => model.Dni)</th>
+            <th>@Html.DisplayNameFor(model => model.Telefono)</th>
+            <th>@Html.DisplayNameFor(model => model.Email)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.IdInquilino)</td>
+                <td>@Html.DisplayFor(modelItem => item.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.Apellido)</td>
+                <td>@Html.DisplayFor(modelItem => item.Dni)</td>
+                <td>@Html.DisplayFor(modelItem => item.Telefono)</td>
+                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.IdInquilino" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInquilino" title="Eliminar">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Paginación -->
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        @if (Pagina > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
+                    <i class="fa-solid fa-angles-left"></i>
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+            </li>
+        }
+
+        @for (int i = 1; i <= TotalPaginas; i++)
+        {
+            <li class="page-item @(i == Pagina ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+            </li>
+        }
+
+        @if (Pagina < TotalPaginas)
+        {
+            <li class="page-item">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
+                    <i class="fa-solid fa-angles-right"></i>
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+            </li>
+        }
+    </ul>
+</nav>

@@ -80,6 +80,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                             iterationCount: 1000,
                             numBytesRequested: 256 / 8));
                     repositorio.Alta(propietario);
+					TempData["Mensaje"] = "Propietario creado correctamente";
                     TempData["Id"] = propietario.IdPropietario;
                     return RedirectToAction(nameof(Index));
                 }
