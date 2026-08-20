@@ -25,7 +25,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 			this.logger = logger;
 		
 		}
-
+		// Poner los breakpoints en los metodos para hacer la depuración
         //GET: Propietarios
         public ActionResult Index(int pagina=1)
 		{
@@ -56,7 +56,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 return View();
             }
             catch (Exception ex)
-            {//poner breakpoints para detectar errores
+            {
                 logger.LogError(ex, "Error en Create");
                 throw;
             }
@@ -87,7 +87,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                     return View(propietario);
             }
             catch (Exception ex)
-            {//poner breakpoints para detectar errores
+            {
                 logger.LogError(ex, "Error en Create");
                 throw;
             }
@@ -102,7 +102,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return View(entidad);
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				logger.LogError(ex, "Error en Eliminar");
 				throw;
 			}
@@ -120,7 +120,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return RedirectToAction(nameof(Index));
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				logger.LogError(ex, "Error en Eliminar");
 				throw;
 			}
@@ -135,7 +135,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return View(entidad);//pasa el modelo a la vista
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				logger.LogError(ex, "Error en Edit");
 				throw;
 			}
@@ -144,24 +144,14 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 		// POST: Propietarios/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		//public ActionResult Edit(int id, IFormCollection collection)
 		public ActionResult Edit(int id, Propietario entidad)
 		{
-			// Si en lugar de IFormCollection ponemos Propietario, el enlace de datos lo hace el sistema
+			
 			try
 			{
 				var p = repositorio.ObtenerPorId(id);
 				if (p == null)
 					return NotFound();
-				// En caso de ser necesario usar: 
-				//
-				//Convert.ToInt32(collection["CAMPO"]);
-				//Convert.ToDecimal(collection["CAMPO"]);
-				//Convert.ToDateTime(collection["CAMPO"]);
-				//int.Parse(collection["CAMPO"]);
-				//decimal.Parse(collection["CAMPO"]);
-				//DateTime.Parse(collection["CAMPO"]);
-				////////////////////////////////////////
 				p.Nombre = entidad.Nombre;
 				p.Apellido = entidad.Apellido;
 				p.Dni = entidad.Dni;
@@ -172,7 +162,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return RedirectToAction(nameof(Index));
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				logger.LogError(ex, "Error en Edit");
 				throw;
 			}
@@ -205,7 +195,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return Ok(res);
 			}
 			catch (Exception ex)
-			{//poner breakpoints para detectar errores
+			{
 				return BadRequest(ex.Message);
 			}
 		}
@@ -260,7 +250,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 			catch (Exception ex)
 			{
 				logger.LogError(ex, "Error en CambiarPass");
-				TempData["Error"] = ex.Message;
+				TempData["Error"] = "Ocurrió un error al intentar cambiar la contraseña. Por favor, inténtalo más tarde.";
 				TempData["StackTrace"] = ex.StackTrace;
 				return RedirectToAction("Edit", new { id = id });
 			}

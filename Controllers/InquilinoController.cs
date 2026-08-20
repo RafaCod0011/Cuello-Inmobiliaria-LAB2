@@ -19,6 +19,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             this.logger = logger;
         }
 
+        // Poner los breakpoints en los metodos para hacer la depuración
         // GET: Inquilino/Index
         public ActionResult Index(int pagina = 1)
         {
@@ -158,42 +159,6 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             {
                 logger.LogError(ex, "Error en Eliminar POST");
                 throw;
-            }
-        }
-
-        // POST: Inquilino/Guardar/5 (método auxiliar para API, opcional)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Guardar(int id, Inquilino entidad)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                if (id == 0)
-                {
-                    id = repositorio.Alta(entidad);
-                }
-                else
-                {
-                    var i = repositorio.ObtenerPorId(id);
-                    if (i == null)
-                        return NotFound();
-
-                    i.Nombre = entidad.Nombre;
-                    i.Apellido = entidad.Apellido;
-                    i.Dni = entidad.Dni;
-                    i.Telefono = entidad.Telefono;
-                    i.Email = entidad.Email;
-                    repositorio.Modificacion(i);
-                }
-                var res = repositorio.ObtenerPorId(id);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
             }
         }
     }

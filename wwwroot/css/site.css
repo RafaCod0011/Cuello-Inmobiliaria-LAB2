@@ -110,8 +110,12 @@ html {
   --color-bg: #bef3c5; /* fondo general de la página */
   --color-navbar: #079c36; /* fondo del navbar */
   --color-footer: #079c36; /* fondo del footer */
+  --color-footer-text: #fefefe;
   --color-navbar-text: #fefefe; /* color de "Inmobiliaria" y los links */
-  --color-navbar-text-hover: #0d6efd; /* color al pasar el mouse / con foco */
+  --color-navbar-text-hover: #70e94e; /* color al pasar el mouse / con foco */
+  --color-pagination: #198754;
+  --color-pagination-hover-bg: #d1e7dd;
+  --color-pagination-hover-border: #146c43;
 }
 
 body {
@@ -124,6 +128,7 @@ body {
 
 .footer {
   background-color: var(--color-footer);
+  color: var(--color-footer-text);
 }
 
 .navbar-light .navbar-brand,
@@ -135,4 +140,25 @@ body {
 .navbar-light .nav-link:hover,
 .navbar-light .nav-link:focus {
   color: var(--color-navbar-text-hover);
+}
+
+.pagination .page-link {
+  color: var(--color-pagination);
+}
+
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+  color: var(--color-pagination-hover-border);
+  background-color: var(--color-pagination-hover-bg);
+  border-color: var(--color-pagination);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--color-pagination);
+  border-color: var(--color-pagination);
+  color: #ffffff;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #adb5bd;
 }

@@ -1,27 +1,27 @@
 @model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.Propietario>
 
 @{
-    ViewData[index:"Title"]= "Propietario";
+	ViewData[index: "Title"] = "Propietario";
 	var Pagina = ViewBag.Pagina ?? 1;
 	var TotalPaginas = ViewBag.TotalPaginas ?? 1;
 }
 <h1>
 	Propietarios
 	<div class="btn-group pull-right">
-		<a class="btn btn-primary" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
+		<a class="btn btn-success" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
 	</div>
 </h1>
 
 @if (ViewBag.Mensaje != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @ViewBag.Mensaje
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+	<div class="alert alert-success alert-dismissible fade show" role="alert">
+		@ViewBag.Mensaje
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
 }
-<table class="table table-striped">
+<table class="table table-bordered">
 	<thead>
-		<tr>
+		<tr class="table-success">
 			<th>
 				@Html.DisplayNameFor(model => model.IdPropietario)
 			</th>
@@ -73,7 +73,8 @@
 						<a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdPropietario" title="Eliminar">
 							<i class="fa-solid fa-trash-can"></i>
 						</a>
-						<a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmuebles" asp-route-id="@item.IdPropietario" title="Mis Propiedades">
+						<a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmuebles"
+						   asp-route-id="@item.IdPropietario" title="Mis Propiedades">
 							<i class="fa-solid fa-building"></i>
 						</a>
 					</div>

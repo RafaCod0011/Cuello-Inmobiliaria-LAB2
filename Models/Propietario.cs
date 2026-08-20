@@ -5,7 +5,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
     public class Propietario
 	{
 		[Key]
-		[Display(Name = "Código Int.")]
+		[Display(Name = "Código")]
 		public int IdPropietario { get; set; }
 
 		[Required(ErrorMessage = "El nombre es obligatorio")]

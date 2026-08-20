@@ -9,7 +9,7 @@
 <h1>
     Inquilinos
     <div class="btn-group pull-right">
-        <a class="btn btn-primary" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
+        <a class="btn btn-success" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
     </div>
 </h1>
 
@@ -18,9 +18,9 @@
     <div class="alert alert-success">@ViewBag.Mensaje</div>
 }
 
-<table class="table table-striped">
+<table class="table table-bordered">
     <thead>
-        <tr>
+        <tr class="table-success">
             <th>@Html.DisplayNameFor(model => model.IdInquilino)</th>
             <th>@Html.DisplayNameFor(model => model.Nombre)</th>
             <th>@Html.DisplayNameFor(model => model.Apellido)</th>

@@ -1,6 +1,6 @@
 # Sistema de Reservas Temporales
 
-Sistema para la gestión de alquileres temporarios de propiedades de una agencia inmobiliaria.
+Sistema web para la gestión de una inmobiliaria dedicada al alquiler temporario de propiedades, desarrollado en ASP.NET Core MVC con MySQL. Esta entrega implementa el ABM (Alta, Baja y Modificación) de Propietarios e Inquilinos.
 
 ---
 
@@ -13,6 +13,8 @@ Sistema para la gestión de alquileres temporarios de propiedades de una agencia
 ## 📐 Modelo de Datos
 
 ### Diagrama Entidad-Relación (DER)
+
+Diagrama de clases provisional, falta hacer la implementacion final.
 
 ```mermaid
 erDiagram
@@ -136,8 +138,8 @@ inmobiliariaulp.sql
 
 3. Ejecutar el script completo desde **MySQL Workbench**, **DBeaver** u otro cliente MySQL.
 
-4. El script creará la base de datos, sus tablas, relaciones y datos iniciales correspondientes.
+4. El script creará la base de datos, sus tablas y datos iniciales correspondientes.
 
-5. Verificar que la base de datos haya sido creada correctamente antes de ejecutar el proyecto.
+5. Verificar que la base de datos haya sido creada correctamente con sus datos antes de ejecutar el proyecto.
 
 > **Importante:** La configuración de conexión del proyecto debe utilizar los datos correspondientes a la instalación local de MySQL.
