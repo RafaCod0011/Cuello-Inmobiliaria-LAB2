@@ -27,7 +27,6 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 		}
 
         //GET: Propietarios
-        [Route("[controller]/Index")]
         public ActionResult Index(int pagina=1)
 		{
 			try

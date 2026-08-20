@@ -8,24 +8,131 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow:
+    0 0 0 0.1rem white,
+    0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+/* ---------- Dashboard Home ---------- */
+.dashboard-header {
+  margin: 3rem 0 2.5rem;
+}
+
+.dashboard-header h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-card {
+  display: block;
+  background: #eafbf3;
+  border-radius: 1rem;
+  padding: 2.25rem 1.25rem;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 20px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  height: 100%;
+}
+
+.dashboard-card:hover,
+.dashboard-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.08),
+    0 14px 28px rgba(0, 0, 0, 0.08);
+  color: inherit;
+}
+
+.dashboard-card h5 {
+  margin: 0 0 0.35rem;
+  color: #212529;
+  font-weight: 600;
+}
+
+.dashboard-card p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.dashboard-card-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.1rem;
+  font-size: 1.6rem;
+}
+
+.dashboard-card-icon.icon-blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.dashboard-card-icon.icon-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.dashboard-card-icon.icon-orange {
+  background: #ffe4d6;
+  color: #ea580c;
+}
+.dashboard-card-icon.icon-purple {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+/* ---------- Colores del sitio ---------- */
+:root {
+  --color-bg: #bef3c5; /* fondo general de la página */
+  --color-navbar: #079c36; /* fondo del navbar */
+  --color-footer: #079c36; /* fondo del footer */
+  --color-navbar-text: #fefefe; /* color de "Inmobiliaria" y los links */
+  --color-navbar-text-hover: #0d6efd; /* color al pasar el mouse / con foco */
+}
+
+body {
+  background-color: var(--color-bg);
+}
+
+.navbar {
+  background-color: var(--color-navbar);
+}
+
+.footer {
+  background-color: var(--color-footer);
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .nav-link {
+  color: var(--color-navbar-text);
+}
+
+.navbar-light .navbar-brand:hover,
+.navbar-light .nav-link:hover,
+.navbar-light .nav-link:focus {
+  color: var(--color-navbar-text-hover);
 }
