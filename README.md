@@ -117,6 +117,8 @@ El proyecto utiliza **MySQL** como sistema gestor de base de datos.
 
 El script de creación de la base de datos se encuentra en la **raíz del proyecto**:
 
+La base de datos actualmente solo cuenta con dos tablas: Propietario e Inquilino.
+
 ```text
 inmobiliariaulp.sql
 ```
