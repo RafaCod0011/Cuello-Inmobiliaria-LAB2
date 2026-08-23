@@ -143,3 +143,10 @@ inmobiliariaulp.sql
 5. Verificar que la base de datos haya sido creada correctamente con sus datos antes de ejecutar el proyecto.
 
 > **Importante:** La configuración de conexión del proyecto debe utilizar los datos correspondientes a la instalación local de MySQL.
+
+6. Abrir la terminal, en la raíz del proyecto ejecutar las siguientes instrucciones:
+   
+```text
+dotnet restore
+dotnet run
+```
