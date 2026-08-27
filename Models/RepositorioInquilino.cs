@@ -13,7 +13,11 @@ namespace Cuello_Inmobiliaria_LAB2.Models
         }
 
         public int Alta(Inquilino i)
-        {
+        {   
+             if (ExisteDni(i.Dni))
+                throw new Exception("Ya existe un inquilino con ese DNI.");
+            if (ExisteEmail(i.Email))
+                throw new Exception("Ya existe un inquilino con ese Email.");
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -58,6 +62,10 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Modificacion(Inquilino i)
         {
+            if (ExisteDni(i.Dni, i.IdInquilino))
+                throw new Exception("Ya existe otro inquilino con ese DNI.");
+            if (ExisteEmail(i.Email, i.IdInquilino))
+                throw new Exception("Ya existe otro inquilino con ese Email.");
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -230,6 +238,44 @@ namespace Cuello_Inmobiliaria_LAB2.Models
                 }
             }
             return res;
+        }
+
+        public bool ExisteDni(string dni, int? idExcluir = null)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT COUNT(1) FROM Inquilino WHERE Dni = @dni";
+                if (idExcluir.HasValue)
+                    sql += " AND IdInquilino != @id";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dni", dni);
+                    if (idExcluir.HasValue)
+                        command.Parameters.AddWithValue("@id", idExcluir.Value);
+                    connection.Open();
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+        }
+
+        public bool ExisteEmail(string email, int? idExcluir = null)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT COUNT(1) FROM Inquilino WHERE Email = @email";
+                if (idExcluir.HasValue)
+                    sql += " AND IdInquilino != @id";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@email", email);
+                    if (idExcluir.HasValue)
+                        command.Parameters.AddWithValue("@id", idExcluir.Value);
+                    connection.Open();
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+                    return count > 0;
+                }
+            }
         }
     }
 }

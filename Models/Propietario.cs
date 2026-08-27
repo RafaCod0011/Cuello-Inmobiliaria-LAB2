@@ -22,14 +22,10 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
 		[Display(Name = "Teléfono")]
 		[RegularExpression(@"^(\+?[0-9()\-\s]{6,20})?$", ErrorMessage = "Ingresá un teléfono válido (solo números, espacios, guiones, paréntesis y opcionalmente +)")]
-		public string Telefono { get; set; } = "";
+		public string? Telefono { get; set; }
 
 		[Required, EmailAddress(ErrorMessage = "Ingresá un email con formato válido")]
 		public string Email { get; set; } = "";
-
-		[Required(ErrorMessage = "La clave es obligatoria"), DataType(DataType.Password)]
-		public string Clave { get; set; } = "";
-
 		public override string ToString()
 		{
 			//return $"{Apellido}, {Nombre}";

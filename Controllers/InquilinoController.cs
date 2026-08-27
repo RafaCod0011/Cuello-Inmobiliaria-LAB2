@@ -74,7 +74,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Create POST");
-                throw;
+                ModelState.AddModelError("", ex.Message);
+                return View(inquilino);
             }
         }
 
@@ -102,7 +103,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
+                return View(entidad);
                 {
                     var i = repositorio.ObtenerPorId(id);
                     if (i == null)
@@ -118,12 +120,12 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                     TempData["Mensaje"] = "Datos guardados correctamente";
                     return RedirectToAction(nameof(Index));
                 }
-                return View(entidad);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Edit POST");
-                throw;
+                ModelState.AddModelError("", ex.Message);
+                return View(entidad);
             }
         }
 
@@ -158,7 +160,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Eliminar POST");
-                throw;
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Index));
             }
         }
     }

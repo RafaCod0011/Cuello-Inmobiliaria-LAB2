@@ -1,0 +1,77 @@
+@model Cuello_Inmobiliaria_LAB2.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Eliminar Inmueble";
+}
+
+<h1>Eliminar Inmueble</h1>
+
+<h3>¿Estás seguro de que deseas eliminar este inmueble?</h3>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.IdInmueble)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.IdInmueble)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Direccion)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Direccion)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Cupo)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Cupo)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PrecioPorDia)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PrecioPorDia)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PorcentajeReserva)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PorcentajeReserva)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Estado)
+        </dt>
+        <dd class="col-sm-10">
+            <span class="badge @(Model.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
+                @Html.DisplayFor(model => model.Estado)
+            </span>
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Propietario)
+        </dt>
+        <dd class="col-sm-10">
+            @(Model.Propietario?.ToString() ?? "Sin propietario")
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Tipo)
+        </dt>
+        <dd class="col-sm-10">
+            @(Model.Tipo?.Nombre ?? "Sin tipo")
+        </dd>
+    </dl>
+
+    <form asp-action="Eliminar" asp-route-id="@Model.IdInmueble">
+        <input type="submit" value="Eliminar" class="btn btn-danger" />
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

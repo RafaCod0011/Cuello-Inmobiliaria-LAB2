@@ -1,0 +1,117 @@
+@model Cuello_Inmobiliaria_LAB2.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Crear inmueble";
+    var propietarios = ViewBag.Propietarios;
+    var tipos = ViewBag.Tipos;
+}
+
+<h4>Nuevo Inmueble</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Direccion" class="control-label"></label>
+                <input asp-for="Direccion" class="form-control" />
+                <span asp-validation-for="Direccion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Cupo" class="control-label"></label>
+                <input asp-for="Cupo" class="form-control" />
+                <span asp-validation-for="Cupo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PrecioPorDia" class="control-label"></label>
+                <input asp-for="PrecioPorDia" class="form-control" />
+                <span asp-validation-for="PrecioPorDia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PorcentajeReserva" class="control-label"></label>
+                <input asp-for="PorcentajeReserva" class="form-control" />
+                <span asp-validation-for="PorcentajeReserva" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Latitud" class="control-label"></label>
+                <input asp-for="Latitud" class="form-control" />
+                <span asp-validation-for="Latitud" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Longitud" class="control-label"></label>
+                <input asp-for="Longitud" class="form-control" />
+                <span asp-validation-for="Longitud" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Estado" class="control-label"></label>
+                <select asp-for="Estado" class="form-control"
+                        asp-items="Html.GetEnumSelectList<EstadoInmueble>()"></select>
+                <span asp-validation-for="Estado" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdPropietario" class="control-label"></label>
+                <select asp-for="IdPropietario" class="form-control" id="IdPropietario">
+                    <option value="">Seleccione un propietario</option>
+                    @foreach (var item in propietarios)
+                    {
+                        <option value="@item.IdPropietario">@item</option>
+                    }
+                </select>
+                <span asp-validation-for="IdPropietario" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdTipo" class="control-label"></label>
+                <select asp-for="IdTipo" class="form-control">
+                    <option value="">Seleccione un tipo</option>
+                    @foreach (var item in tipos)
+                    {
+                        <option value="@item.IdTipo">@item.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="IdTipo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Crear" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-danger"">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#IdPropietario').select2({
+                language: "es",
+                theme: 'bootstrap-5',
+                placeholder: "Buscar propietario...",
+                minimumInputLength: 2,
+                allowClear: true,
+                ajax: {
+                    delay: 250,
+                    dataType: "json",
+                    cache: true,
+                    url: function (params) {
+                        var q = params.term ? encodeURIComponent(params.term) : "";
+                        return `/Propietario/Buscar/${q}`;
+                    },
+                    processResults: function (res) {
+                        return {
+                            results: res.map(function (p) {
+                                return {
+                                    id: p.idPropietario,
+                                    text: p.nombre + ' ' + p.apellido
+                                };
+                            })
+                        };
+                    }
+                }
+            });
+        });
+    </script>
+}

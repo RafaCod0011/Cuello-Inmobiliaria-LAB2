@@ -15,12 +15,16 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
 		public int Alta(Propietario p)
 		{
+			if (ExisteDni(p.Dni))
+			throw new Exception("Ya existe un propietario con ese DNI.");
+			if (ExisteEmail(p.Email))
+			throw new Exception("Ya existe un propietario con ese Email.");
 			int res = -1;
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"INSERT INTO Propietario 
-					(Nombre, Apellido, Dni, Telefono, Email, Clave) 
-					VALUES (@nombre, @apellido, @dni, @telefono, @email, @clave);
+					(Nombre, Apellido, Dni, Telefono, Email) 
+					VALUES (@nombre, @apellido, @dni, @telefono, @email);
 					SELECT LAST_INSERT_ID();";//devuelve el id insertado (SCOPE_IDENTITY para sql)
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -28,9 +32,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 					command.Parameters.AddWithValue("@nombre", p.Nombre);
 					command.Parameters.AddWithValue("@apellido", p.Apellido);
 					command.Parameters.AddWithValue("@dni", p.Dni);
-					command.Parameters.AddWithValue("@telefono", p.Telefono);
+					command.Parameters.AddWithValue("@telefono", p.Telefono ?? (object)DBNull.Value);
 					command.Parameters.AddWithValue("@email", p.Email);
-					command.Parameters.AddWithValue("@clave", p.Clave);
 					connection.Open();
 					res = Convert.ToInt32(command.ExecuteScalar());
 					p.IdPropietario = res;
@@ -58,11 +61,15 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 		}
 		public int Modificacion(Propietario p)
 		{
+			if (ExisteDni(p.Dni, p.IdPropietario))
+			throw new Exception("Ya existe otro propietario con ese DNI.");
+			if (ExisteEmail(p.Email, p.IdPropietario))
+			throw new Exception("Ya existe otro propietario con ese Email.");
 			int res = -1;
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"UPDATE Propietario 
-					SET Nombre=@nombre, Apellido=@apellido, Dni=@dni, Telefono=@telefono, Email=@email, Clave=@clave 
+					SET Nombre=@nombre, Apellido=@apellido, Dni=@dni, Telefono=@telefono, Email=@email
 					WHERE {nameof(Propietario.IdPropietario)} = @id";
 				using (var command = new MySqlCommand(sql, connection))
 				{
@@ -70,9 +77,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 					command.Parameters.AddWithValue("@nombre", p.Nombre);
 					command.Parameters.AddWithValue("@apellido", p.Apellido);
 					command.Parameters.AddWithValue("@dni", p.Dni);
-					command.Parameters.AddWithValue("@telefono", p.Telefono);
+					command.Parameters.AddWithValue("@telefono", p.Telefono ?? (object)DBNull.Value);
 					command.Parameters.AddWithValue("@email", p.Email);
-					command.Parameters.AddWithValue("@clave", p.Clave);
 					command.Parameters.AddWithValue("@id", p.IdPropietario);
 					connection.Open();
 					res = command.ExecuteNonQuery();
@@ -88,7 +94,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = $@"SELECT 
-					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave
+					IdPropietario, Nombre, Apellido, Dni, Telefono, Email
 					FROM Propietario
 					LIMIT {tamPagina} OFFSET {(pagina - 1) * tamPagina}
 				";
@@ -105,9 +111,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 							Nombre = reader.GetString(nameof(Propietario.Nombre)),
 							Apellido = reader.GetString(nameof(Propietario.Apellido)),
 							Dni = reader.GetString(nameof(Propietario.Dni)),
-							Telefono = reader.GetString(nameof(Propietario.Telefono)),
+							Telefono = reader.IsDBNull(reader.GetOrdinal(nameof(Propietario.Telefono))) ? null : reader.GetString(nameof(Propietario.Telefono)),
 							Email = reader.GetString(nameof(Propietario.Email)),
-							Clave = reader.GetString(nameof(Propietario.Clave)),
 						};
 						res.Add(p);
 					}
@@ -147,7 +152,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT 
-					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave 
+					IdPropietario, Nombre, Apellido, Dni, Telefono, Email 
 					FROM Propietario
 					WHERE IdPropietario=@id";
 				using (var command = new MySqlCommand(sql, connection))
@@ -164,9 +169,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 							Nombre = reader.GetString("Nombre"),
 							Apellido = reader.GetString("Apellido"),
 							Dni = reader.GetString("Dni"),
-							Telefono = reader.GetString("Telefono"),
+							Telefono = reader.IsDBNull(reader.GetOrdinal(nameof(Propietario.Telefono))) ? null : reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
-							Clave = reader.GetString("Clave"),
 						};
 					}
 					connection.Close();
@@ -181,7 +185,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @$"SELECT 
-					{nameof(Propietario.IdPropietario)}, Nombre, Apellido, Dni, Telefono, Email, Clave 
+					{nameof(Propietario.IdPropietario)}, Nombre, Apellido, Dni, Telefono, Email
 					FROM Propietario
 					WHERE Email=@email";
 				using (var command = new MySqlCommand(sql, connection))
@@ -198,9 +202,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 							Nombre = reader.GetString("Nombre"),
 							Apellido = reader.GetString("Apellido"),
 							Dni = reader.GetString("Dni"),
-							Telefono = reader.GetString("Telefono"),
+							Telefono = reader.IsDBNull(reader.GetOrdinal(nameof(Propietario.Telefono))) ? null : reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
-							Clave = reader.GetString("Clave"),
 						};
 					}
 					connection.Close();
@@ -217,7 +220,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				string sql = @"SELECT
-					IdPropietario, Nombre, Apellido, Dni, Telefono, Email, Clave 
+					IdPropietario, Nombre, Apellido, Dni, Telefono, Email
 					FROM Propietario
 					WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
 				using (var command = new MySqlCommand(sql, connection))
@@ -234,9 +237,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 							Nombre = reader.GetString("Nombre"),
 							Apellido = reader.GetString("Apellido"),
 							Dni = reader.GetString("Dni"),
-							Telefono = reader.GetString("Telefono"),
+							Telefono = reader.IsDBNull(reader.GetOrdinal(nameof(Propietario.Telefono))) ? null : reader.GetString("Telefono"),
 							Email = reader.GetString("Email"),
-							Clave = reader.GetString("Clave"),
 						};
 						res.Add(p);
 					}
@@ -244,6 +246,44 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 				}
 			}
 			return res;
+		}
+
+		public bool ExisteDni(string dni, int? idExcluir = null)
+		{
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				string sql = "SELECT COUNT(1) FROM Propietario WHERE Dni = @dni";
+				if (idExcluir.HasValue)
+					sql += " AND IdPropietario != @id";
+				using (var command = new MySqlCommand(sql, connection))
+				{
+					command.Parameters.AddWithValue("@dni", dni);
+					if (idExcluir.HasValue)
+						command.Parameters.AddWithValue("@id", idExcluir.Value);
+					connection.Open();
+					int count = Convert.ToInt32(command.ExecuteScalar());
+					return count > 0;
+				}
+			}
+		}
+
+		public bool ExisteEmail(string email, int? idExcluir = null)
+		{
+			using (var connection = new MySqlConnection(connectionString))
+			{
+				string sql = "SELECT COUNT(1) FROM Propietario WHERE Email = @email";
+				if (idExcluir.HasValue)
+					sql += " AND IdPropietario != @id";
+				using (var command = new MySqlCommand(sql, connection))
+				{
+					command.Parameters.AddWithValue("@email", email);
+					if (idExcluir.HasValue)
+						command.Parameters.AddWithValue("@id", idExcluir.Value);
+					connection.Open();
+					int count = Convert.ToInt32(command.ExecuteScalar());
+					return count > 0;
+				}
+			}
 		}
 	}
 }

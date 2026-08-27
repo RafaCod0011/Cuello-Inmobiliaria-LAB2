@@ -71,13 +71,6 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             {
                 if (ModelState.IsValid)// Pregunta si el modelo es válido
                 {
-                    // Reemplazo de clave plana por clave con hash
-                    propietario.Clave = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                            password: propietario.Clave,
-                            salt: System.Text.Encoding.ASCII.GetBytes(config["Salt"]),
-                            prf: KeyDerivationPrf.HMACSHA1,
-                            iterationCount: 1000,
-                            numBytesRequested: 256 / 8));
                     repositorio.Alta(propietario);
 					TempData["Mensaje"] = "Propietario creado correctamente";
                     TempData["Id"] = propietario.IdPropietario;
@@ -89,7 +82,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Create");
-                throw;
+                ModelState.AddModelError("", ex.Message);  // Muestra el error en la vista
+        		return View(propietario);
             }
         }
 
@@ -145,7 +139,10 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public ActionResult Edit(int id, Propietario entidad)
-		{
+		{	
+			ModelState.Remove("Clave");
+			if (!ModelState.IsValid)
+        	return View(entidad);
 			
 			try
 			{
@@ -164,7 +161,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 			catch (Exception ex)
 			{
 				logger.LogError(ex, "Error en Edit");
-				throw;
+				ModelState.AddModelError("", ex.Message);
+        		return View(entidad);
 			}
 		}
 
@@ -199,61 +197,11 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 				return BadRequest(ex.Message);
 			}
 		}
-
-		// POST: Propietarios/Edit/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public ActionResult CambiarPass(int id, CambioClaveView cambio)
+		public IActionResult Buscar(string term)
 		{
-			Propietario? propietario = null;
-			try
-			{
-				// recuperar propietario original
-				propietario = repositorio.ObtenerPorId(id);
-				// verificar clave antigüa
-				var pass = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-					password: cambio.ClaveVieja ?? "",
-					salt: System.Text.Encoding.ASCII.GetBytes(config["Salt"] ?? ""),
-					prf: KeyDerivationPrf.HMACSHA1,
-					iterationCount: 1000,
-					numBytesRequested: 256 / 8));
-				if (propietario?.Clave != pass)
-				{
-					TempData["Error"] = "Clave incorrecta";
-					// se rederige porque no hay vista de cambio de pass, está compartida con Edit
-					return RedirectToAction("Edit", new { id = id });
-				}
-				if (ModelState.IsValid)
-				{
-					propietario.Clave = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-							password: cambio.ClaveNueva,
-							salt: System.Text.Encoding.ASCII.GetBytes(config["Salt"] ?? ""),
-							prf: KeyDerivationPrf.HMACSHA1,
-							iterationCount: 1000,
-							numBytesRequested: 256 / 8));
-					repositorio.Modificacion(propietario);
-					TempData["Mensaje"] = "Contraseña actualizada correctamente";
-					return RedirectToAction(nameof(Index));
-				}
-				else//estado inválido
-				{//pasaje de los errores del modelstate a un string en tempData
-					foreach (ModelStateEntry modelState in ViewData.ModelState.Values)
-					{
-						foreach (ModelError error in modelState.Errors)
-						{
-							TempData["Error"] += error.ErrorMessage + "\n";
-						}
-					}
-					return RedirectToAction("Edit", new { id = id });
-				}
-			}
-			catch (Exception ex)
-			{
-				logger.LogError(ex, "Error en CambiarPass");
-				TempData["Error"] = "Ocurrió un error al intentar cambiar la contraseña. Por favor, inténtalo más tarde.";
-				TempData["StackTrace"] = ex.StackTrace;
-				return RedirectToAction("Edit", new { id = id });
-			}
+    		var resultados = repositorio.BuscarPorNombre(term ?? "")
+        	.Select(p => new { idPropietario = p.IdPropietario, nombre = p.Nombre, apellido = p.Apellido });
+    		return Json(resultados);
 		}
    }     
 }
