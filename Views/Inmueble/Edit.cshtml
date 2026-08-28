@@ -11,235 +11,250 @@
     var direccion = Model?.Direccion ?? "";
 }
 
-<h1>Editar Inmueble</h1>
-<hr />
-<div class="row">
-
-    <div class="col-md-6">
-        <form asp-action="Edit" asp-route-id="@Model?.IdInmueble">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="IdInmueble" />
-
-            <div class="form-group">
-                <label asp-for="Direccion" class="control-label"></label>
-                <input asp-for="Direccion" class="form-control" />
-                <span asp-validation-for="Direccion" class="text-danger"></span>
+<section class="edit-page">
+    <div class="edit-card inmueble-card">
+        <header class="edit-card-header">
+            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-building-circle-check"></i></div>
+            <div>
+                <p class="edit-eyebrow">Gestion de inmuebles</p>
+                <h1>Editar inmueble</h1>
+                <p class="edit-description">Actualice los datos y la ubicación de la propiedad.</p>
             </div>
+        </header>
+        <div class="row inmueble-edit-row">
 
-            <div class="form-group">
-                <label asp-for="Cupo" class="control-label"></label>
-                <input asp-for="Cupo" class="form-control" />
-                <span asp-validation-for="Cupo" class="text-danger"></span>
-            </div>
+            <div class="col-md-6">
+                <form asp-action="Edit" asp-route-id="@Model?.IdInmueble" class="edit-form inmueble-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="IdInmueble" />
+                    <div class="edit-fields inmueble-fields">
+                        <div class="form-group">
+                            <label asp-for="Direccion" class="control-label"></label>
+                            <input asp-for="Direccion" class="form-control" />
+                            <span asp-validation-for="Direccion" class="text-danger"></span>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="PrecioPorDia" class="control-label"></label>
-                <input asp-for="PrecioPorDia" class="form-control" />
-                <span asp-validation-for="PrecioPorDia" class="text-danger"></span>
-            </div>
+                        <div class="form-group">
+                            <label asp-for="Cupo" class="control-label"></label>
+                            <input asp-for="Cupo" class="form-control" />
+                            <span asp-validation-for="Cupo" class="text-danger"></span>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="PorcentajeReserva" class="control-label"></label>
-                <input asp-for="PorcentajeReserva" class="form-control" />
-                <span asp-validation-for="PorcentajeReserva" class="text-danger"></span>
-            </div>
+                        <div class="form-group">
+                            <label asp-for="PrecioPorDia" class="control-label"></label>
+                            <input asp-for="PrecioPorDia" class="form-control" />
+                            <span asp-validation-for="PrecioPorDia" class="text-danger"></span>
+                        </div>
 
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <select asp-for="Estado" class="form-control" asp-items="Html.GetEnumSelectList<EstadoInmueble>()">
-                    <option value="">Seleccionar estado</option>
-                </select>
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
+                        <div class="form-group">
+                            <label asp-for="PorcentajeReserva" class="control-label"></label>
+                            <input asp-for="PorcentajeReserva" class="form-control" />
+                            <span asp-validation-for="PorcentajeReserva" class="text-danger"></span>
+                        </div>
 
-            <div class="row">
+                        <div class="form-group">
+                            <label asp-for="Estado" class="control-label"></label>
+                            <select asp-for="Estado" class="form-control"
+                                    asp-items="Html.GetEnumSelectList<EstadoInmueble>()">
+                                <option value="">Seleccionar estado</option>
+                            </select>
+                            <span asp-validation-for="Estado" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Latitud" class="control-label"></label>
+                                    <input asp-for="Latitud" class="form-control" id="Latitud" step="0.000001" />
+                                    <span asp-validation-for="Latitud" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Longitud" class="control-label"></label>
+                                    <input asp-for="Longitud" class="form-control" id="Longitud" step="0.000001" />
+                                    <span asp-validation-for="Longitud" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Select2 -->
+                        <div class="form-group">
+                            <label asp-for="IdPropietario" class="control-label"></label>
+                            <select asp-for="IdPropietario" class="form-control" id="IdPropietario">
+                                <option value="">Seleccionar propietario</option>
+                                @foreach (var item in propietarios)
+                                {
+                                    <option value="@item.IdPropietario"
+                                            selected="@(item.IdPropietario == Model?.IdPropietario)">
+                                        @item.ToString()
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="IdPropietario" class="text-danger"></span>
+                        </div>
+
+                        <!--Tipo -->
+                        <div class="form-group">
+                            <label asp-for="IdTipo" class="control-label"></label>
+                            <select asp-for="IdTipo" class="form-control">
+                                <option value="">Seleccionar tipo</option>
+                                @foreach (var item in tipos)
+                                {
+                                    <option value="@item.IdTipo" selected="@(item.IdTipo == Model?.IdTipo)">
+                                        @item.Nombre
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="IdTipo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="edit-actions">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk"
+                                                                             aria-hidden="true"></i> Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Mapa -->
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="Latitud" class="control-label"></label>
-                        <input asp-for="Latitud" class="form-control" id="Latitud" step="0.000001" />
-                        <span asp-validation-for="Latitud" class="text-danger"></span>
+                    <div class="mt-4">
+                        <h4>Ubicación en el mapa</h4>
+                        <div id="mapa" style="height: 350px; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                        <small class="text-muted">Haz clic en el mapa para actualizar coordenadas</small>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="Longitud" class="control-label"></label>
-                        <input asp-for="Longitud" class="form-control" id="Longitud" step="0.000001" />
-                        <span asp-validation-for="Longitud" class="text-danger"></span>
-                    </div>
-                </div>
             </div>
-
-            <!-- Select2 -->
-            <div class="form-group">
-                <label asp-for="IdPropietario" class="control-label"></label>
-                <select asp-for="IdPropietario" class="form-control" id="IdPropietario">
-                    <option value="">Seleccionar propietario</option>
-                    @foreach (var item in propietarios)
-                    {
-                        <option value="@item.IdPropietario" selected="@(item.IdPropietario == Model?.IdPropietario)">
-                            @item.ToString()
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="IdPropietario" class="text-danger"></span>
-            </div>
-
-            <!--Tipo -->
-            <div class="form-group">
-                <label asp-for="IdTipo" class="control-label"></label>
-                <select asp-for="IdTipo" class="form-control">
-                    <option value="">Seleccionar tipo</option>
-                    @foreach (var item in tipos)
-                    {
-                        <option value="@item.IdTipo" selected="@(item.IdTipo == Model?.IdTipo)">
-                            @item.Nombre
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="IdTipo" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mt-3">
-                <input type="submit" value="Guardar" class="btn btn-success" />
-                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
-    </div>
-
-    <!-- Mapa -->
-    <div class="col-md-6">
-        <div class="mt-4">
-            <h4>Ubicación en el mapa</h4>
-            <div id="mapa" style="height: 350px; width: 100%; border: 1px solid #ccc; border-radius: 4px;"></div>
-            <small class="text-muted">Haz clic en el mapa para actualizar coordenadas</small>
         </div>
-    </div>
-</div>
+    </section>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            // -- Select2 para propietarios --
-            $('#IdPropietario').select2({
-                language: "es",
-                theme: 'bootstrap-5',
-                placeholder: "Buscar propietario...",
-                minimumInputLength: 2, // Búsqueda después de 2 caracteres
-                allowClear: true,
-                ajax: {
-                    delay: 250,
-                    dataType: "json",
-                    cache: true,
-                    url: function (params) {
-                        let q = params.term ? encodeURIComponent(params.term) : "";
-                        return `/Propietario/Buscar/${q}`;
-                    },
-                    processResults: function (res) {
-                        return {
-                            results: res.map(p => ({
-                                id: p.idPropietario,
-                                text: p.nombre + ' ' + p.apellido
-                            }))
-                        };
+        <script type="text/javascript">
+            $(document).ready(function () {
+                // -- Select2 para propietarios --
+                $('#IdPropietario').select2({
+                    language: "es",
+                    theme: 'bootstrap-5',
+                    placeholder: "Buscar propietario...",
+                    minimumInputLength: 2, // Búsqueda después de 2 caracteres
+                    allowClear: true,
+                    ajax: {
+                        delay: 250,
+                        dataType: "json",
+                        cache: true,
+                        url: function (params) {
+                            let q = params.term ? encodeURIComponent(params.term) : "";
+                            return `/Propietario/Buscar/${q}`;
+                        },
+                        processResults: function (res) {
+                            return {
+                                results: res.map(p => ({
+                                    id: p.idPropietario,
+                                    text: p.nombre + ' ' + p.apellido
+                                }))
+                            };
+                        }
+                    }
+                });
+
+                // Cargar el propietario actual si existe
+                var propietarioActual = @(Model?.IdPropietario ?? 0);
+                if (propietarioActual > 0) {
+                    // Agregar una opción con el nombre del propietario actual
+                    // (si no se cargó en el select inicial)
+                    var opcion = $('#IdPropietario option[value="' + propietarioActual + '"]');
+                    if (opcion.length && opcion.text() === '') {
+                        // Si está vacío, lo rellenamos con el nombre (esto debería estar en ViewBag)
+                        opcion.text('Propietario actual');
                     }
                 }
-            });
 
-            // Cargar el propietario actual si existe
-            var propietarioActual = @(Model?.IdPropietario ?? 0);
-            if (propietarioActual > 0) {
-                // Agregar una opción con el nombre del propietario actual
-                // (si no se cargó en el select inicial)
-                var opcion = $('#IdPropietario option[value="' + propietarioActual + '"]');
-                if (opcion.length && opcion.text() === '') {
-                    // Si está vacío, lo rellenamos con el nombre (esto debería estar en ViewBag)
-                    opcion.text('Propietario actual');
-                }
-            }
+                // -- Mapa Leaflet --
+                var lat = @lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var lng = @lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-            // -- Mapa Leaflet --
-            var lat = @lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            var lng = @lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var direccion = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(direccion));
 
-            var direccion = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(direccion));
+                var map, marker;
 
-            var map, marker;
+                if (lat !== 0 && lng !== 0) {
+                    // Inicializar mapa con coordenadas existentes
+                    map = L.map('mapa').setView([lat, lng], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
 
-            if (lat !== 0 && lng !== 0) {
-                // Inicializar mapa con coordenadas existentes
-                map = L.map('mapa').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                }).addTo(map);
+                    marker = L.marker([lat, lng], { draggable: true }).addTo(map)
+                        .bindPopup(direccion || "Ubicación desconocida")
+                        .openPopup();
 
-                marker = L.marker([lat, lng], { draggable: true }).addTo(map)
-                    .bindPopup(direccion || "Ubicación desconocida")
-                    .openPopup();
-
-                // Al arrastrar el marcador, actualizar los campos de coordenadas
-                marker.on('dragend', function (e) {
-                    var pos = marker.getLatLng();
-                    $('#Latitud').val(pos.lat.toFixed(6));
-                    $('#Longitud').val(pos.lng.toFixed(6));
-                });
-            } else {
-                // Sin coordenadas: mostrar mapa con vista por defecto
-                map = L.map('mapa').setView([-33.295000, -66.335000], 13); // San Luis, Argentina
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
-
-                // Mensaje en el mapa
-                L.control.attribution({ position: 'bottomright' }).addTo(map);
-
-            }
-
-            // Al hacer clic en el mapa, colocar/actualizar marcador y coordenadas
-            map.on('click', function (e) {
-                var latlng = e.latlng;
-                // Si no hay marcador, crearlo
-                if (!marker) {
-                    marker = L.marker([latlng.lat, latlng.lng], { draggable: true }).addTo(map);
-                    marker.on('dragend', function (ev) {
+                    // Al arrastrar el marcador, actualizar los campos de coordenadas
+                    marker.on('dragend', function (e) {
                         var pos = marker.getLatLng();
                         $('#Latitud').val(pos.lat.toFixed(6));
                         $('#Longitud').val(pos.lng.toFixed(6));
                     });
                 } else {
-                    marker.setLatLng(latlng);
-                }
-                // Actualizar campos de coordenadas
-                $('#Latitud').val(latlng.lat.toFixed(6));
-                $('#Longitud').val(latlng.lng.toFixed(6));
-                console.log("lat:", lat, "lng:", lng);
-                // Actualizar popup
-                marker.bindPopup(direccion || "Ubicación seleccionada").openPopup();
-            });
+                    // Sin coordenadas: mostrar mapa con vista por defecto
+                    map = L.map('mapa').setView([-33.295000, -66.335000], 13); // San Luis, Argentina
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(map);
 
-            // Si los campos de coordenadas cambian manualmente, mover el marcador
-            $('#Latitud, #Longitud').on('change', function () {
-                var newLat = parseFloat($('#Latitud').val());
-                var newLng = parseFloat($('#Longitud').val());
-                if (!isNaN(newLat) && !isNaN(newLng)) {
-                    if (marker) {
-                        marker.setLatLng([newLat, newLng]);
-                        map.setView([newLat, newLng], 15);
-                    } else {
-                        // Si no hay marcador, crear uno
-                        marker = L.marker([newLat, newLng], { draggable: true }).addTo(map);
+                    // Mensaje en el mapa
+                    L.control.attribution({ position: 'bottomright' }).addTo(map);
+
+                }
+
+                // Al hacer clic en el mapa, colocar/actualizar marcador y coordenadas
+                map.on('click', function (e) {
+                    var latlng = e.latlng;
+                    // Si no hay marcador, crearlo
+                    if (!marker) {
+                        marker = L.marker([latlng.lat, latlng.lng], { draggable: true }).addTo(map);
                         marker.on('dragend', function (ev) {
                             var pos = marker.getLatLng();
                             $('#Latitud').val(pos.lat.toFixed(6));
                             $('#Longitud').val(pos.lng.toFixed(6));
                         });
-                        map.setView([newLat, newLng], 15);
+                    } else {
+                        marker.setLatLng(latlng);
                     }
-                }
+                    // Actualizar campos de coordenadas
+                    $('#Latitud').val(latlng.lat.toFixed(6));
+                    $('#Longitud').val(latlng.lng.toFixed(6));
+                    console.log("lat:", lat, "lng:", lng);
+                    // Actualizar popup
+                    marker.bindPopup(direccion || "Ubicación seleccionada").openPopup();
+                });
+
+                // Si los campos de coordenadas cambian manualmente, mover el marcador
+                $('#Latitud, #Longitud').on('change', function () {
+                    var newLat = parseFloat($('#Latitud').val());
+                    var newLng = parseFloat($('#Longitud').val());
+                    if (!isNaN(newLat) && !isNaN(newLng)) {
+                        if (marker) {
+                            marker.setLatLng([newLat, newLng]);
+                            map.setView([newLat, newLng], 15);
+                        } else {
+                            // Si no hay marcador, crear uno
+                            marker = L.marker([newLat, newLng], { draggable: true }).addTo(map);
+                            marker.on('dragend', function (ev) {
+                                var pos = marker.getLatLng();
+                                $('#Latitud').val(pos.lat.toFixed(6));
+                                $('#Longitud').val(pos.lng.toFixed(6));
+                            });
+                            map.setView([newLat, newLng], 15);
+                        }
+                    }
+                });
             });
-        });
-    </script>
-}
+        </script>
+    }

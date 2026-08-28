@@ -1,7 +1,7 @@
-@model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.Inmueble>
+@model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.Reserva>
 
 @{
-    ViewData["Title"] = "Inmuebles";
+    ViewData["Title"] = "Reservas";
     var Pagina = ViewBag.Pagina ?? 1;
     var TotalPaginas = ViewBag.TotalPaginas ?? 1;
 }
@@ -9,11 +9,11 @@
 <section class="index-page">
     <header class="index-header">
         <div>
-            <p class="index-eyebrow">Gestion de inmuebles</p>
-            <h1>Inmuebles</h1>
-            <p class="index-description">Administre las propiedades registradas en el sistema.</p>
+            <p class="index-eyebrow">Gestion de reservas</p>
+            <h1>Reservas</h1>
+            <p class="index-description">Administre las reservas, fechas y estados.</p>
         </div><a class="btn btn-success index-create-button" asp-action="Create"><i class="fa-solid fa-plus"
-                                                                                    aria-hidden="true"></i><span>Nuevo inmueble</span></a>
+                                                                                    aria-hidden="true"></i><span>Nueva reserva</span></a>
     </header>
 
     @if (ViewBag.Mensaje != null)
@@ -33,17 +33,16 @@
     }
 
     <div class="index-table-wrapper">
-        <table class="table index-table inmueble-index-table">
+        <table class="table index-table reservation-index-table">
             <thead>
                 <tr>
-                    <th>@Html.DisplayNameFor(model => model.IdInmueble)</th>
-                    <th>@Html.DisplayNameFor(model => model.Direccion)</th>
-                    <th>@Html.DisplayNameFor(model => model.Cupo)</th>
-                    <th>@Html.DisplayNameFor(model => model.PrecioPorDia)</th>
-                    <th>@Html.DisplayNameFor(model => model.PorcentajeReserva)</th>
-                    <th>@Html.DisplayNameFor(model => model.Estado)</th>
-                    <th>Propietario</th>
-                    <th>Tipo</th>
+                    <th>@Html.DisplayNameFor(m => m.IdReserva)</th>
+                    <th>@Html.DisplayNameFor(m => m.Inmueble)</th>
+                    <th>@Html.DisplayNameFor(m => m.Inquilino)</th>
+                    <th>@Html.DisplayNameFor(m => m.FechaInicio)</th>
+                    <th>@Html.DisplayNameFor(m => m.FechaFin)</th>
+                    <th>@Html.DisplayNameFor(m => m.MontoDiario)</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -51,34 +50,43 @@
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td>@Html.DisplayFor(modelItem => item.IdInmueble)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Direccion)</td>
-                        <td>@Html.DisplayFor(modelItem => item.Cupo)</td>
-                        <td>@item.PrecioPorDia.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
-                        <td>@Html.DisplayFor(modelItem => item.PorcentajeReserva)</td>
+                        <td>@Html.DisplayFor(m => item.IdReserva)</td>
+                        <td>@(item.Inmueble?.Direccion ?? "Sin inmueble")</td>
+                        <td>@(item.Inquilino?.ToString() ?? "Sin inquilino")</td>
+                        <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                        <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
+                        <td>@item.MontoDiario.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
                         <td>
-                            <span class="badge @(item.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
-                                @Html.DisplayFor(modelItem => item.Estado)
-                            </span>
+                            @if (item.EstaTerminada)
+                            {
+                                <span class="badge bg-danger">Terminada</span>
+                            }
+                            else if (item.EstaVigente)
+                            {
+                                <span class="badge bg-success">Vigente</span>
+                            }
+                            else if (item.FechaFin < DateTime.Today)
+                            {
+                                <span class="badge bg-secondary">Finalizada</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Próxima</span>
+                            }
                         </td>
-                        <td>@(item.Propietario?.ToString() ?? "Sin propietario")</td>
-                        <td>@(item.Tipo?.Nombre ?? "Sin tipo")</td>
                         <td>
                             <div class="index-actions" role="group">
-                                <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.IdInmueble"
+                                <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.IdReserva"
+                                   title="Detalles">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.IdReserva"
                                    title="Editar">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <a class="btn btn-danger btn-sm" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
+                                <a class="btn btn-danger btn-sm" asp-action="Eliminar" asp-route-id="@item.IdReserva"
                                    title="Eliminar">
                                     <i class="fa-solid fa-trash-can"></i>
-                                </a>
-                                <a class="btn btn-info btn-sm" asp-action="Ver" asp-route-id="@item.IdInmueble" title="Ver">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                                <a class="btn btn-warning btn-sm" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
-                                   title="Ver imágenes">
-                                    <i class="fa-solid fa-images"></i>
                                 </a>
                             </div>
                         </td>

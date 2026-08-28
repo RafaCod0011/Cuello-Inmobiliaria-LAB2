@@ -4,74 +4,98 @@
     ViewData["Title"] = "Eliminar Inmueble";
 }
 
-<h1>Eliminar Inmueble</h1>
+<section class="delete-page">
+    <div class="delete-card inmueble-delete-card">
+        <header class="delete-card-header">
+            <div class="delete-icon" aria-hidden="true"><i class="fa-solid fa-building-circle-xmark"></i></div>
+            <div>
+                <p class="delete-eyebrow">Accion irreversible</p>
+                <h1>Eliminar inmueble</h1>
+                <p class="delete-question">¿Seguro que desea eliminar este inmueble?</p>
+            </div>
+        </header>
+        <div class="delete-details">
+            <h2>Datos del inmueble</h2>
+            <dl>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.IdInmueble)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.IdInmueble)
+                    </dd>
+                </div>
 
-<h3>¿Estás seguro de que deseas eliminar este inmueble?</h3>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Direccion)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Direccion)
+                    </dd>
+                </div>
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IdInmueble)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IdInmueble)
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Cupo)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Cupo)
+                    </dd>
+                </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Direccion)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Direccion)
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.PrecioPorDia)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.PrecioPorDia)
+                    </dd>
+                </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Cupo)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Cupo)
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.PorcentajeReserva)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.PorcentajeReserva)
+                    </dd>
+                </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PrecioPorDia)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PrecioPorDia)
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Estado)
+                    </dt>
+                    <dd>
+                        <span class="badge @(Model.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
+                            @Html.DisplayFor(model => model.Estado)
+                        </span>
+                    </dd>
+                </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.PorcentajeReserva)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.PorcentajeReserva)
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Propietario)
+                    </dt>
+                    <dd>
+                        @(Model.Propietario?.ToString() ?? "Sin propietario")
+                    </dd>
+                </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Estado)
-        </dt>
-        <dd class="col-sm-10">
-            <span class="badge @(Model.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
-                @Html.DisplayFor(model => model.Estado)
-            </span>
-        </dd>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Tipo)
+                    </dt>
+                    <dd>
+                        @(Model.Tipo?.Nombre ?? "Sin tipo")
+                    </dd>
+                </div>
+            </dl>
+        </div>
 
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Propietario)
-        </dt>
-        <dd class="col-sm-10">
-            @(Model.Propietario?.ToString() ?? "Sin propietario")
-        </dd>
-
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Tipo)
-        </dt>
-        <dd class="col-sm-10">
-            @(Model.Tipo?.Nombre ?? "Sin tipo")
-        </dd>
-    </dl>
-
-    <form asp-action="Eliminar" asp-route-id="@Model.IdInmueble">
-        <input type="submit" value="Eliminar" class="btn btn-danger" />
-        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-    </form>
-</div>
+        <form asp-action="Eliminar" asp-route-id="@Model.IdInmueble" class="delete-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                Eliminar inmueble</button>
+            </form>
+        </div></section>

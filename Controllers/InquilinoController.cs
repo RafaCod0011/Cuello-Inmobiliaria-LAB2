@@ -164,5 +164,30 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        public IActionResult Buscar(string term)
+{
+    try
+    {
+        if (string.IsNullOrEmpty(term) || term.Length < 2)
+        {
+            return Json(new List<object>());
+        }
+
+        var resultados = repositorio.BuscarPorNombre(term)
+            .Select(i => new
+            {
+                id = i.IdInquilino,
+                text = i.ToString() // Usa el ToString() del modelo
+            });
+
+        return Json(resultados);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error en Buscar inquilinos");
+        return Json(new List<object>());
+    }
+}
     }
 }

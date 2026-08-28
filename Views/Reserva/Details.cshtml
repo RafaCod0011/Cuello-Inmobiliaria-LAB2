@@ -1,0 +1,147 @@
+@model Cuello_Inmobiliaria_LAB2.Models.Reserva
+
+@{
+    ViewData["Title"] = $"Detalles de Reserva #{Model.IdReserva}";
+}
+
+<section class="details-page">
+    <div class="details-card reservation-details-card">
+        <header class="edit-card-header">
+            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+            <div>
+                <p class="edit-eyebrow">Gestion de reservas</p>
+                <h1>Detalles de la reserva</h1>
+                <p class="edit-description">Consulte el estado y la información completa.</p>
+            </div>
+        </header>
+        <div class="reservation-details-content">
+            <dl class="details-list">
+                <div class="details-row">
+                    <dt>@Html.DisplayNameFor(m => m.IdReserva)</dt>
+                    <dd>@Html.DisplayFor(m => m.IdReserva)</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>Inmueble</dt>
+                    <dd>@(Model.Inmueble?.Direccion ?? "Sin inmueble")</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>Inquilino</dt>
+                    <dd>@(Model.Inquilino?.ToString() ?? "Sin inquilino")</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>@Html.DisplayNameFor(m => m.FechaInicio)</dt>
+                    <dd>@Model.FechaInicio.ToString("dd/MM/yyyy")</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>@Html.DisplayNameFor(m => m.FechaFin)</dt>
+                    <dd>@Model.FechaFin.ToString("dd/MM/yyyy")</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>@Html.DisplayNameFor(m => m.MontoDiario)</dt>
+                    <dd>@Model.MontoDiario.ToString("C", new System.Globalization.CultureInfo("es-AR"))</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>Monto total</dt>
+                    <dd>@Model.MontoTotal.ToString("C", new System.Globalization.CultureInfo("es-AR"))</dd>
+                </div>
+
+                <div class="details-row">
+                    <dt>Estado</dt>
+                    <dd>
+                        @if (Model.EstaTerminada)
+                        {
+                            <span class="badge bg-danger">Terminada</span>
+                        }
+                        else if (Model.EstaVigente)
+                        {
+                            <span class="badge bg-success">Vigente</span>
+                        }
+                        else if (Model.FechaFin < DateTime.Today)
+                        {
+                            <span class="badge bg-secondary">Finalizada</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Próxima</span>
+                        }
+                    </dd>
+                </div>
+            </dl>
+
+            <h4>Pagos asociados</h4>
+            @if (Model.Pagos != null && Model.Pagos.Any())
+            {
+                <div class="index-table-wrapper">
+                    <table class="table index-table">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Fecha</th>
+                                <th>Importe</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pago in Model.Pagos)
+                            {
+                                <tr>
+                                    <td>@pago.Concepto</td>
+                                    <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                                    <td>@pago.Importe.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
+                                    <td>@(pago.Anulado ? "Anulado" : "Activo")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p>No hay pagos registrados.</p>
+            }
+
+            <div class="details-actions">
+                <a asp-action="Index" class="btn btn-outline-secondary">Volver a la lista</a>
+                <a asp-action="Edit" asp-route-id="@Model.IdReserva" class="btn btn-primary"><i class="fa-solid fa-pen"
+                                                                                                    aria-hidden="true"></i> Editar</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalTerminar">
+                        Terminar anticipadamente
+                    </button>
+                </div>
+
+                <!-- Modal para terminar anticipadamente -->
+                <div class="modal fade" id="modalTerminar" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form asp-action="Terminar" asp-route-id="@Model.IdReserva" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Terminar reserva anticipadamente</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="fechaTerminacion" class="control-label">Fecha de terminación</label>
+                                        <input type="date" id="fechaTerminacion" name="fechaTerminacion"
+                                               class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                    </div>
+                                    <p class="text-muted mt-2">Se calculará automáticamente la multa según las reglas.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancelar</button>
+                                    <input type="submit" value="Confirmar terminación" class="btn btn-danger" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>

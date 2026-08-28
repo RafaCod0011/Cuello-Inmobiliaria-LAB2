@@ -4,52 +4,74 @@
     ViewData["Title"] = "Eliminar Inquilino";
 }
 
-<h1>Eliminar Inquilino</h1>
-
-<h3>¿Seguro que desea eliminar el inquilino?</h3>
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IdInquilino)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IdInquilino)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Apellido)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Apellido)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Dni)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Dni)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Telefono)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Telefono)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
+<section class="delete-page">
+    <div class="delete-card">
+        <header class="delete-card-header">
+            <div class="delete-icon" aria-hidden="true"><i class="fa-solid fa-user-xmark"></i></div>
+            <div>
+                <p class="delete-eyebrow">Accion irreversible</p>
+                <h1>Eliminar inquilino</h1>
+                <p class="delete-question">¿Seguro que desea eliminar este inquilino?</p>
+            </div>
+        </header>
+        <div class="delete-details">
+            <h2>Datos del inquilino</h2>
+            <dl>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.IdInquilino)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.IdInquilino)
+                    </dd>
+                </div>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Nombre)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Nombre)
+                    </dd>
+                </div>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Apellido)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Apellido)
+                    </dd>
+                </div>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Dni)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Dni)
+                    </dd>
+                </div>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Telefono)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Telefono)
+                    </dd>
+                </div>
+                <div class="delete-detail">
+                    <dt>
+                        @Html.DisplayNameFor(model => model.Email)
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.Email)
+                    </dd>
+                </div>
+            </dl>
+        </div>
     </dl>
 
-    <form asp-action="Eliminar" asp-route-id="@Model.IdInquilino">
-        <input type="submit" value="Eliminar" class="btn btn-danger" />
-        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-    </form>
-</div>
+    <form asp-action="Eliminar" asp-route-id="@Model.IdInquilino" class="delete-actions">
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+            Eliminar inquilino</button>
+        </form>
+    </div></section>

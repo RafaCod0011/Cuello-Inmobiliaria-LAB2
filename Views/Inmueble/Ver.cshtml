@@ -7,112 +7,142 @@
     var direccion = Model.Direccion ?? "";
 }
 
-<h1>Detalles del Inmueble</h1>
-
-<hr />
-<div class="row">
-    <div class="col-md-6">
-        <dl class="row">
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.IdInmueble)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.IdInmueble)
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Direccion)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Direccion)
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Cupo)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.Cupo)
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.PrecioPorDia)
-            </dt>
-            <dd class="col-sm-9">
-                @Model.PrecioPorDia.ToString("C", new System.Globalization.CultureInfo("es-AR"))
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.PorcentajeReserva)
-            </dt>
-            <dd class="col-sm-9">
-                @Html.DisplayFor(model => model.PorcentajeReserva) %
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Estado)
-            </dt>
-            <dd class="col-sm-9">
-                <span class="badge @(Model.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
-                    @Html.DisplayFor(model => model.Estado)
-                </span>
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Propietario)
-            </dt>
-            <dd class="col-sm-9">
-                @(Model.Propietario?.ToString() ?? "Sin propietario")
-            </dd>
-
-            <dt class="col-sm-3">
-                @Html.DisplayNameFor(model => model.Tipo)
-            </dt>
-            <dd class="col-sm-9">
-                @(Model.Tipo?.Nombre ?? "Sin tipo")
-            </dd>
-
-            @if (Model.Latitud.HasValue || Model.Longitud.HasValue)
-            {
-                <dt class="col-sm-3">
-                    @Html.DisplayNameFor(model => model.Latitud)
-                </dt>
-                <dd class="col-sm-9">
-                    @(Model.Latitud?.ToString("0.000000") ?? "N/A")
-                </dd>
-
-                <dt class="col-sm-3">
-                    @Html.DisplayNameFor(model => model.Longitud)
-                </dt>
-                <dd class="col-sm-9">
-                    @(Model.Longitud?.ToString("0.000000") ?? "N/A")
-                </dd>
-            }
-        </dl>
-    </div>
-
-    <!-- Mapa -->
-    <div class="col-md-6">
-        @if (Model.Latitud.HasValue && Model.Longitud.HasValue && Model.Latitud != 0 && Model.Longitud != 0)
-        {
-            <div class="mt-2">
-                <h4>Ubicación en el mapa</h4>
-                <div id="mapa" style="height: 300px; width: 100%; border: 1px solid #ccc; border-radius: 4px;"></div>
+<section class="details-page">
+    <div class="details-card">
+        <header class="edit-card-header">
+            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-building"></i></div>
+            <div>
+                <p class="edit-eyebrow">Gestion de inmuebles</p>
+                <h1>Detalles del inmueble</h1>
+                <p class="edit-description">Consulte la información y ubicación de esta propiedad.</p>
             </div>
-        }
-        else
-        {
-            <div class="mt-2">
-                <h4>Ubicación en el mapa</h4>
-                <div class="alert alert-info">No hay coordenadas disponibles para este inmueble.</div>
-            </div>
-        }
-    </div>
-</div>
+        </header>
+        <div class="row details-layout">
+            <div class="col-md-6">
+                <dl class="details-list">
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.IdInmueble)
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.IdInmueble)
+                        </dd>
+                    </div>
 
-<div class="mt-3">
-    <a asp-action="Edit" asp-route-id="@Model.IdInmueble" class="btn btn-primary">Editar</a>
-    <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
-</div>
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Direccion)
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Direccion)
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Cupo)
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Cupo)
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.PrecioPorDia)
+                        </dt>
+                        <dd>
+                            @Model.PrecioPorDia.ToString("C", new System.Globalization.CultureInfo("es-AR"))
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.PorcentajeReserva)
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.PorcentajeReserva) %
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Estado)
+                        </dt>
+                        <dd>
+                            <span class="badge @(Model.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
+                                @Html.DisplayFor(model => model.Estado)
+                            </span>
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Propietario)
+                        </dt>
+                        <dd>
+                            @(Model.Propietario?.ToString() ?? "Sin propietario")
+                        </dd>
+                    </div>
+
+                    <div class="details-row">
+                        <dt>
+                            @Html.DisplayNameFor(model => model.Tipo)
+                        </dt>
+                        <dd>
+                            @(Model.Tipo?.Nombre ?? "Sin tipo")
+                        </dd>
+                    </div>
+
+                    @if (Model.Latitud.HasValue || Model.Longitud.HasValue)
+                    {
+                        <div class="details-row">
+                            <dt>
+                                @Html.DisplayNameFor(model => model.Latitud)
+                            </dt>
+                            <dd>
+                                @(Model.Latitud?.ToString("0.000000") ?? "N/A")
+                            </dd>
+                        </div>
+
+                        <div class="details-row">
+                            <dt>
+                                @Html.DisplayNameFor(model => model.Longitud)
+                            </dt>
+                            <dd>
+                                @(Model.Longitud?.ToString("0.000000") ?? "N/A")
+                            </dd>
+                        </div>
+                    }
+                </dl>
+            </div>
+
+            <!-- Mapa -->
+            <div class="col-md-6">
+                @if (Model.Latitud.HasValue && Model.Longitud.HasValue && Model.Latitud != 0 && Model.Longitud != 0)
+                {
+                    <div class="mt-2">
+                        <h4>Ubicación en el mapa</h4>
+                        <div id="mapa" style="height: 300px; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-2">
+                        <h4>Ubicación en el mapa</h4>
+                        <div class="alert alert-info">No hay coordenadas disponibles para este inmueble.</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="details-actions">
+            <a asp-action="Edit" asp-route-id="@Model.IdInmueble" class="btn btn-primary">Editar</a>
+            <a asp-action="Index" class="btn btn-secondary">Volver a la lista</a>
+        </div>
+    </div>
+</section>
 
 @section Scripts {
     @if (Model.Latitud.HasValue && Model.Longitud.HasValue && Model.Latitud != 0 && Model.Longitud != 0)

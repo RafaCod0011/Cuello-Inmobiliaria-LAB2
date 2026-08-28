@@ -5,124 +5,135 @@
 	var Pagina = ViewBag.Pagina ?? 1;
 	var TotalPaginas = ViewBag.TotalPaginas ?? 1;
 }
-<h1>
-	Propietarios
-	<div class="btn-group pull-right">
-		<a class="btn btn-success" asp-action="Create" title="Crear"><i class="fa-solid fa-plus"></i></a>
-	</div>
-</h1>
+<section class="index-page">
+	<header class="index-header">
+		<div>
+			<p class="index-eyebrow">Gestion de propietarios</p>
+			<h1>Propietarios</h1>
+			<p class="index-description">Administre los propietarios registrados en el sistema.</p>
+		</div>
+		<a class="btn btn-success index-create-button" asp-action="Create">
+			<i class="fa-solid fa-plus" aria-hidden="true"></i>
+			<span>Nuevo propietario</span>
+		</a>
+	</header>
 
-@if (ViewBag.Mensaje != null)
-{
-	<div class="alert alert-success alert-dismissible fade show" role="alert">
-		@ViewBag.Mensaje
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	@if (ViewBag.Mensaje != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			@ViewBag.Mensaje
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
+	}
+	<div class="index-table-wrapper">
+		<table class="table index-table">
+			<thead>
+				<tr>
+					<th>
+						@Html.DisplayNameFor(model => model.IdPropietario)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.Nombre)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.Apellido)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.Dni)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.Telefono)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.Email)
+					</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td>
+							@Html.DisplayFor(modelItem => item.IdPropietario)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.Nombre)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.Apellido)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.Dni)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.Telefono)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.Email)
+						</td>
+						<td>
+							<div class="index-actions" role="group">
+								<a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.IdPropietario"
+								   title="Editar">
+									<i class="fa-solid fa-pen"></i>
+								</a>
+								<a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdPropietario"
+								   title="Eliminar">
+									<i class="fa-solid fa-trash-can"></i>
+								</a>
+								<a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmuebles"
+								   asp-route-id="@item.IdPropietario" title="Mis Propiedades">
+									<i class="fa-solid fa-building"></i>
+								</a>
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
 	</div>
-}
-<table class="table table-bordered">
-	<thead>
-		<tr class="table-success">
-			<th>
-				@Html.DisplayNameFor(model => model.IdPropietario)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Nombre)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Apellido)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Dni)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Telefono)
-			</th>
-			<th>
-				@Html.DisplayNameFor(model => model.Email)
-			</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		@foreach (var item in Model)
-		{
-			<tr>
-				<td>
-					@Html.DisplayFor(modelItem => item.IdPropietario)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Nombre)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Apellido)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Dni)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Telefono)
-				</td>
-				<td>
-					@Html.DisplayFor(modelItem => item.Email)
-				</td>
-				<td>
-					<div class="btn-group" role="group">
-						<a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.IdPropietario" title="Editar">
-							<i class="fa-solid fa-pen"></i>
-						</a>
-						<a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdPropietario" title="Eliminar">
-							<i class="fa-solid fa-trash-can"></i>
-						</a>
-						<a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmuebles"
-						   asp-route-id="@item.IdPropietario" title="Mis Propiedades">
-							<i class="fa-solid fa-building"></i>
-						</a>
-					</div>
-				</td>
-			</tr>
-		}
-	</tbody>
-</table>
-<!-- Paginación -->
-<nav aria-label="Page navigation">
-	<ul class="pagination">
-		<!-- Botón "Anterior" -->
-		@if (Pagina > 1)
-		{
-			<li class="page-item">
-				<a class="page-link" asp-action"Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
-					<i class="fa-solid fa-angles-left"></i>
-				</a>
-			</li>
-		}
-		else
-		{
-			<li class="page-item disabled">
-				<span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
-			</li>
-		}
+	<!-- Paginación -->
+	<nav aria-label="Page navigation">
+		<ul class="pagination">
+			<!-- Botón "Anterior" -->
+			@if (Pagina > 1)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
+						<i class="fa-solid fa-angles-left"></i>
+					</a>
+				</li>
+			}
+			else
+			{
+				<li class="page-item disabled">
+					<span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+				</li>
+			}
 
-		<!-- Números de página -->
-		@for (int i = 1; i <= TotalPaginas; i++)
-		{
-			<li class="page-item @(i == Pagina ? "active" : "")">
-				<a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
-			</li>
-		}
-		<!-- Botón "Siguiente" -->
-		@if (Pagina < TotalPaginas)
-		{
-			<li class="page-item">
-				<a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
-					<i class="fa-solid fa-angles-right"></i>
-				</a>
-			</li>
-		}
-		else
-		{
-			<li class="page-item disabled">
-				<span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
-			</li>
-		}
-	</ul>
-</nav>
+			<!-- Números de página -->
+			@for (int i = 1; i <= TotalPaginas; i++)
+			{
+				<li class="page-item @(i == Pagina ? "active" : "")">
+					<a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+				</li>
+			}
+			<!-- Botón "Siguiente" -->
+			@if (Pagina < TotalPaginas)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
+						<i class="fa-solid fa-angles-right"></i>
+					</a>
+				</li>
+			}
+			else
+			{
+				<li class="page-item disabled">
+					<span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+				</li>
+			}
+		</ul>
+	</nav>
+</section>

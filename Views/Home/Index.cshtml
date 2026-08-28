@@ -27,12 +27,52 @@
         </a>
     </div>
     <div class="col-6 col-md-4 col-lg-3">
-        <a asp-controller="Inmueble" asp-action="Index" class="dashboard-card">
+        <div class="dashboard-card">
             <div class="dashboard-card-icon icon-purple">
                 <i class="fa-solid fa-house"></i>
             </div>
             <h5>Inmuebles</h5>
             <p>Administración de inmuebles</p>
+            <div class="dashboard-card-actions">
+                <button class="dashboard-action" type="button">
+                    <i class="fa-solid fa-check-circle"></i>
+                    Ver disponibles
+                </button>
+                <button class="dashboard-action" type="button">
+                    <i class="fa-solid fa-users"></i>
+                    Ver por propietarios
+                </button>
+            </div>
+            <a asp-controller="Inmueble" asp-action="Index" class="dashboard-index-link">
+                Ir al índice <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+        <a asp-controller="Reserva" asp-action="Index" class="dashboard-card">
+            <div class="dashboard-card-icon icon-orange">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <h5>Reservas</h5>
+            <p>Administración de reservas</p>
         </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon icon-teal">
+                <i class="fa-solid fa-money-check-dollar"></i>
+            </div>
+            <h5>Pagos</h5>
+            <p>Administración de pagos</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="dashboard-card">
+            <div class="dashboard-card-icon icon-red">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h5>Perfil</h5>
+            <p>Configuración del perfil</p>
+        </div>
     </div>
 </div>

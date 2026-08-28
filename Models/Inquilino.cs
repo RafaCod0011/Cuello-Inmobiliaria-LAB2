@@ -26,5 +26,10 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
 		[Required, EmailAddress(ErrorMessage = "Ingresá un email con formato válido")]
 		public string Email { get; set; } = "";
+
+		public override string ToString()
+		{
+    		return $"{Nombre} {Apellido} (DNI: {Dni})";
+		}
 	}
 }
