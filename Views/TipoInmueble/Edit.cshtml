@@ -1,0 +1,41 @@
+@model Cuello_Inmobiliaria_LAB2.Models.TipoInmueble
+
+@{
+    ViewData["Title"] = "Editar Tipo";
+}
+
+<section class="edit-page">
+    <div class="edit-card type-card">
+        <header class="edit-card-header">
+            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></div>
+            <div>
+                <p class="edit-eyebrow">Catalogo de inmuebles</p>
+                <h1>Editar tipo de inmueble</h1>
+                <p class="edit-description">Actualice el nombre de la categoría seleccionada.</p>
+            </div>
+        </header>
+
+        <form asp-action="Edit" asp-route-id="@Model.IdTipo" class="edit-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdTipo" />
+            <div class="edit-fields type-fields">
+                <div class="form-group type-name-field">
+                    <label asp-for="Nombre" class="control-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="edit-actions">
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }

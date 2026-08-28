@@ -11,25 +11,28 @@
         <header class="edit-card-header">
             <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-images"></i></div>
             <div>
-                <p class="edit-eyebrow">Gestion de inmuebles</p>
+                <p class="edit-eyebrow">Gestión de inmuebles</p>
                 <h1>Imágenes del inmueble</h1>
-                <p class="edit-description">Cargue y administre las imágenes de esta propiedad.</p>
-            </div>
-        </header>
-        <div class="container media-content">
-            <div class="row">
+                <p class="edit-description">Cargue y administre las imágenes de esta propiedad. La primera imagen será
+                    la portada automáticamente.</p>
+                </div>
+            </header>
+
+            <div class="container media-content">
                 <!-- Formulario para subir imágenes -->
-                <div class="col-md-12">
-                    <h4>Subir imágenes</h4>
-                    <form id="formImagenes" class="upload-form" enctype="multipart/form-data"
-                          onsubmit="subirImagenes(event)">
-                        <div class="upload-field">
-                            <label for="imagenes">Seleccionar imágenes</label>
-                            <input type="file" class="form-control-file" id="imagenes" name="imagenes"
-                                   onchange="previsualizar(event)" accept="image/*" multiple required>
-                        </div>
-                        <button type="submit" class="btn btn-success upload-button"><i class="fas fa-upload"></i> Subir
-                            imágenes</button>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>Subir imágenes</h4>
+                        <form id="formImagenes" class="upload-form" enctype="multipart/form-data"
+                              onsubmit="subirImagenes(event)">
+                            <div class="upload-field">
+                                <label for="imagenes">Seleccionar imágenes</label>
+                                <input type="file" class="form-control-file" id="imagenes" name="imagenes"
+                                       onchange="previsualizar(event)" accept="image/*" multiple required>
+                            </div>
+                            <button type="submit" class="btn btn-success upload-button">
+                                <i class="fas fa-upload"></i> Subir imágenes
+                            </button>
                         </form>
 
                         <div class="mt-3">
@@ -39,6 +42,7 @@
                     </div>
                 </div>
 
+                <!-- Galería de imágenes actuales -->
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <h4>Imágenes actuales</h4>
@@ -47,12 +51,36 @@
                             {
                                 foreach (var img in Model.Imagenes.OrderBy(i => i.Orden))
                                 {
-                                    <div class="m-2 position-relative imagen-con-hover">
+                                    <div class="m-2 position-relative imagen-con-hover" data-id="@img.IdImagen">
                                         <img src="@img.Ruta" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-                                        <button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen"
-                                                onclick="eliminarImagen(@img.IdImagen)">
-                                            <i class="fas fa-times"></i>
-                                        </button>
+
+                                        @if (img.Orden == 0)
+                                        {
+                                            <span class="badge bg-warning position-absolute top-0 start-0 m-1" style="z-index:10;">
+                                                <i class="fa-solid fa-star"></i> Portada
+                                            </span>
+                                        }
+
+                                        <div class="btn-group-vertical position-absolute top-0 end-0 m-1" style="z-index:10;">
+                                            @if (img.Orden != 0)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        onclick="marcarPortada(@img.IdImagen)" title="Marcar como portada">
+                                                    <i class="fa-regular fa-star"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                                                        title="Es la portada">
+                                                    <i class="fa-solid fa-check"></i>
+                                                </button>
+                                            }
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="eliminarImagen(@img.IdImagen)" title="Eliminar">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 }
                             }
@@ -64,11 +92,16 @@
                     </div>
                 </div>
             </div>
-            <div class="media-footer"><a asp-action="Index" class="btn btn-outline-secondary">Volver a la lista</a></div>
+
+            <div class="media-footer">
+                <a asp-action="Index" class="btn btn-outline-secondary">Volver a la lista</a>
+            </div>
         </div>
     </section>
 
     @section Scripts {
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
         <script>
             const inmuebleId = @inmuebleId;
 
@@ -80,10 +113,10 @@
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         $('#preview').append(`
-                                                    <div class="m-2">
-                                                        <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-                                                    </div>
-                                                `);
+                                <div class="m-2">
+                                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                </div>
+                            `);
                     };
                     reader.readAsDataURL(file);
                 });
@@ -113,7 +146,6 @@
                 }).fail(function () {
                     alert('Error al subir las imágenes');
                 }).always(function () {
-                    // Limpiar el formulario
                     document.getElementById('formImagenes').reset();
                     $('#preview').empty();
                     $('#imagenes').val("");
@@ -132,18 +164,48 @@
                     });
             }
 
+            function marcarPortada(imagenId) {
+                $.post(`@Url.Action("MarcarPortada", "Imagenes")/${imagenId}`)
+                    .done(function (imagenes) {
+                        alert('Portada actualizada');
+                        mostrarImagenes(imagenes);
+                    })
+                    .fail(function () {
+                        alert('Error al marcar como portada');
+                    });
+            }
+
             function mostrarImagenes(imagenes) {
                 if (imagenes && imagenes.length > 0) {
                     let html = '';
-                    imagenes.forEach(img => {
+                    // Ordenar: la portada (orden 0) primero, luego el resto por orden
+                    const sorted = [...imagenes].sort((a, b) => a.orden - b.orden);
+                    sorted.forEach(img => {
+                        const esPortada = img.orden === 0;
                         html += `
-                                                    <div class="m-2 position-relative imagen-con-hover">
-                                                        <img src="${img.ruta}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-                                                        <button type="button" class="btn btn-danger btn-sm btn-eliminar-imagen" onclick="eliminarImagen(${img.idImagen})">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                `;
+                                <div class="m-2 position-relative imagen-con-hover" data-id="${img.idImagen}">
+                                    <img src="${img.ruta}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                    ${esPortada ? `
+                                        <span class="badge bg-warning position-absolute top-0 start-0 m-1" style="z-index:10;">
+                                            <i class="fa-solid fa-star"></i> Portada
+                                        </span>
+                                    ` : ''}
+                                    <div class="btn-group-vertical position-absolute top-0 end-0 m-1" style="z-index:10;">
+                                        ${esPortada ? `
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Es la portada">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        ` : `
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="marcarPortada(${img.idImagen})" title="Marcar como portada">
+                                                <i class="fa-regular fa-star"></i>
+                                            </button>
+                                        `}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarImagen(${img.idImagen})" title="Eliminar">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
                     });
                     $('#galeriaActual').html(html);
                 } else {
@@ -151,6 +213,7 @@
                 }
             }
         </script>
+
         <style>
             .imagen-con-hover {
                 position: relative;
@@ -165,6 +228,23 @@
 
             .imagen-con-hover:hover .btn-eliminar-imagen {
                 display: inline-block;
+            }
+
+            /* Estilos para los botones en la galería */
+            .imagen-con-hover .btn-group-vertical .btn {
+                border-radius: 0;
+                padding: 2px 6px;
+                font-size: 0.75rem;
+            }
+
+            .imagen-con-hover .btn-group-vertical .btn:first-child {
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+
+            .imagen-con-hover .btn-group-vertical .btn:last-child {
+                border-bottom-left-radius: 4px;
+                border-bottom-right-radius: 4px;
             }
         </style>
     }

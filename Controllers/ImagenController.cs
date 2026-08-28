@@ -44,6 +44,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Alta(int id, List<IFormFile> imagenes)
         {
             try
@@ -51,17 +52,14 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 if (imagenes == null || imagenes.Count == 0)
                     return BadRequest("No se recibieron archivos.");
 
-                // Ruta donde se guardarán las imágenes
                 string wwwPath = environment.WebRootPath;
                 string path = Path.Combine(wwwPath, "Uploads", "Inmuebles", id.ToString());
                 if (!Directory.Exists(path))
-                {
                     Directory.CreateDirectory(path);
-                }
 
-                // Obtener el último orden usado para este inmueble
                 var existentes = repositorio.BuscarPorInmueble(id);
-                int ultimoOrden = existentes.Any() ? existentes.Max(i => i.Orden) : 0;
+                int ultimoOrden = existentes.Any() ? existentes.Max(i => i.Orden) : -1; // -1 para que la primera sea 0
+                bool esPrimera = !existentes.Any();
 
                 foreach (var file in imagenes)
                 {
@@ -76,18 +74,27 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                             await file.CopyToAsync(stream);
                         }
 
-                        // Crear la entidad ImagenInmueble
+                        int orden;
+                        if (esPrimera)
+                        {
+                            orden = 0; // portada
+                            esPrimera = false; // solo la primera imagen es portada
+                        }
+                        else
+                        {
+                            orden = ++ultimoOrden;
+                        }
+
                         var imagen = new ImagenInmueble
                         {
                             IdInmueble = id,
                             Ruta = $"/Uploads/Inmuebles/{id}/{nombreArchivo}",
-                            Orden = ++ultimoOrden
+                            Orden = orden
                         };
                         repositorio.Alta(imagen);
                     }
                 }
 
-                // Devolver la lista actualizada.
                 return Ok(repositorio.BuscarPorInmueble(id));
             }
             catch (Exception ex)
@@ -123,6 +130,41 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al eliminar imagen {id}", id);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult MarcarPortada(int id)
+        {
+            try
+            {
+                var imagen = repositorio.ObtenerPorId(id);
+                if (imagen == null)
+                    return NotFound();
+
+                var imagenes = repositorio.BuscarPorInmueble(imagen.IdInmueble);
+                
+                // Buscar la portada actual (orden 0)
+                var portadaActual = imagenes.FirstOrDefault(i => i.Orden == 0);
+                if (portadaActual != null && portadaActual.IdImagen != id)
+                {
+                    // Reasignar un orden a la portada actual (la movemos al final)
+                    int maxOrden = imagenes.Max(i => i.Orden);
+                    portadaActual.Orden = maxOrden + 1;
+                    repositorio.Modificacion(portadaActual);
+                }
+
+                // Asignar orden 0 a la imagen seleccionada
+                imagen.Orden = 0;
+                repositorio.Modificacion(imagen);
+
+                // Devolver la lista actualizada de imágenes
+                return Ok(repositorio.BuscarPorInmueble(imagen.IdInmueble));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al marcar portada");
                 return BadRequest(ex.Message);
             }
         }

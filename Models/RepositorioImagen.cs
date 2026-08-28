@@ -175,5 +175,33 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             }
             return res;
         }
+        public IList<ImagenInmueble> BuscarPorInmuebleIds(IList<int> ids)
+        {
+            if (ids == null || !ids.Any()) return new List<ImagenInmueble>();
+
+            var res = new List<ImagenInmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string idsString = string.Join(",", ids);
+                string sql = $"SELECT IdImagen, IdInmueble, Ruta, Orden FROM ImagenInmueble WHERE IdInmueble IN ({idsString}) ORDER BY Orden";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(new ImagenInmueble
+                        {
+                            IdImagen = reader.GetInt32("IdImagen"),
+                            IdInmueble = reader.GetInt32("IdInmueble"),
+                            Ruta = reader.GetString("Ruta"),
+                            Orden = reader.GetInt32("Orden")
+                        });
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
     }
 }

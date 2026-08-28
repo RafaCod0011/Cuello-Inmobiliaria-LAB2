@@ -2,9 +2,8 @@ using System.Collections.Generic;
 
 namespace Cuello_Inmobiliaria_LAB2.Models
 {
-    public interface IRepositorioTipoInmueble
+    public interface IRepositorioTipoInmueble : IRepositorio<TipoInmueble>
     {
-        IList<TipoInmueble> ObtenerLista();
-        TipoInmueble? ObtenerPorId(int id);
+        
     }
 }

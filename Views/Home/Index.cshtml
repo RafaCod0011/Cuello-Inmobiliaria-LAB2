@@ -35,27 +35,47 @@
             <p>Administración de inmuebles</p>
             <div class="dashboard-card-actions">
                 <button class="dashboard-action" type="button">
-                    <i class="fa-solid fa-check-circle"></i>
+                    <i class="fa-solid fa-circle-check"></i>
                     Ver disponibles
                 </button>
                 <button class="dashboard-action" type="button">
                     <i class="fa-solid fa-users"></i>
                     Ver por propietarios
                 </button>
+                <a asp-controller="Inmueble" asp-action="Index" class="dashboard-action dashboard-action-link">
+                    <i class="fa-solid fa-list"></i>
+                    Ver todos
+                </a>
             </div>
-            <a asp-controller="Inmueble" asp-action="Index" class="dashboard-index-link">
-                Ir al índice <i class="fa-solid fa-arrow-right"></i>
-            </a>
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg-3">
-        <a asp-controller="Reserva" asp-action="Index" class="dashboard-card">
+        <a asp-controller="TipoInmueble" asp-action="Index" class="dashboard-card">
+            <div class="dashboard-card-icon icon-blue">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <h5>Tipos de Inmuebles</h5>
+            <p>Administración de tipos de inmuebles</p>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="dashboard-card">
             <div class="dashboard-card-icon icon-orange">
                 <i class="fa-solid fa-calendar-check"></i>
             </div>
             <h5>Reservas</h5>
             <p>Administración de reservas</p>
-        </a>
+            <div class="dashboard-card-actions">
+                <a asp-controller="Reserva" asp-action="Create" class="dashboard-action dashboard-action-link">
+                    <i class="fa-solid fa-calendar-plus"></i>
+                    Crear reserva
+                </a>
+                <a asp-controller="Reserva" asp-action="Index" class="dashboard-action dashboard-action-link">
+                    <i class="fa-solid fa-list"></i>
+                    Ver todas
+                </a>
+            </div>
+        </div>
     </div>
     <div class="col-6 col-md-4 col-lg-3">
         <div class="dashboard-card">

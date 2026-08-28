@@ -13,6 +13,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         private readonly IRepositorioInmueble repositorio;
         private readonly IRepositorioPropietario repositorioPropietario;
         private readonly IRepositorioTipoInmueble repositorioTipo;
+        private readonly IRepositorioImagen repositorioImagen;
         private readonly IConfiguration config;
         private readonly ILogger<InmuebleController> logger;
 
@@ -20,12 +21,14 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             IRepositorioInmueble repo,
             IRepositorioPropietario repoPropietario,
             IRepositorioTipoInmueble repoTipo,
+            IRepositorioImagen repoImagen,
             IConfiguration config,
             ILogger<InmuebleController> logger)
         {
             this.repositorio = repo;
             this.repositorioPropietario = repoPropietario;
             this.repositorioTipo = repoTipo;
+            this.repositorioImagen = repoImagen;
             this.config = config;
             this.logger = logger;
         }
@@ -45,6 +48,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 
                 // Cargar relaciones (Propietario, Tipo) para mostrar en la vista
                 CargarRelaciones(lista);
+                CargarPortadas(lista);
 
                 return View(lista);
             }
@@ -294,6 +298,22 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             {
                 logger.LogError(ex, "Error al cargar imágenes del inmueble {id}", id);
                 throw;
+            }
+        }
+        private void CargarPortadas(IList<Inmueble> inmuebles)
+        {
+            if (inmuebles == null || !inmuebles.Any()) return;
+
+            var ids = inmuebles.Select(i => i.IdInmueble).Distinct().ToList();
+            // Obtener todas las imágenes de estos inmuebles (orden 0 = portada)
+            var imagenes = repositorioImagen.BuscarPorInmuebleIds(ids); 
+            foreach (var i in inmuebles)
+            {
+                var portada = imagenes.FirstOrDefault(img => img.IdInmueble == i.IdInmueble && img.Orden == 0);
+                if (portada != null)
+                    i.Imagenes = new List<ImagenInmueble> { portada }; 
+                else
+                    i.Imagenes = new List<ImagenInmueble>(); 
             }
         }
     }
