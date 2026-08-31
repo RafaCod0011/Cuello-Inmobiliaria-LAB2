@@ -687,9 +687,12 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(18rem, 22rem));
   gap: 1.5rem;
   justify-content: start;
+  align-items: stretch;
 }
 
 .property-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #ffffff;
   border: 1px solid rgba(20, 83, 45, 0.12);
@@ -710,6 +713,7 @@ body {
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: #dfeee2;
+  flex-shrink: 0;
 }
 
 .property-cover img {
@@ -744,6 +748,9 @@ body {
 }
 
 .property-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 1.25rem;
 }
 
@@ -772,6 +779,7 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.85rem 1rem;
   margin: 1.25rem 0;
+  flex: 1;
 }
 
 .property-data div {
@@ -807,6 +815,7 @@ body {
   align-items: center;
   gap: 0.45rem;
   padding-top: 1rem;
+  margin-top: auto;
   border-top: 1px solid #e6eee8;
 }
 
@@ -819,6 +828,12 @@ body {
   padding: 0.45rem 0.65rem;
   font-size: 0.8rem;
   font-weight: 600;
+  color: #ffffff;
+}
+
+.property-actions .btn i,
+.property-actions .btn span {
+  color: #ffffff;
 }
 
 .property-actions .btn:first-child,
@@ -1056,6 +1071,13 @@ body {
   min-width: 9rem;
   padding: 0.65rem 1rem;
   font-weight: 600;
+}
+
+.details-actions .btn i,
+.details-actions .btn span,
+.media-footer .btn i,
+.media-footer .btn span {
+  color: #ffffff;
 }
 
 .media-content {

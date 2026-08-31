@@ -31,9 +31,6 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			//return $"{Apellido}, {Nombre}";
 			//return $"{Nombre} {Apellido}";
 			var res = $"{Nombre} {Apellido}";
-			if(!String.IsNullOrEmpty(Dni)) {
-				res += $" ({Dni})";
-			}
 			return res;
 		}
 	}

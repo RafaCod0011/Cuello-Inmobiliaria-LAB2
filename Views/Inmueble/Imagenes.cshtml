@@ -30,15 +30,16 @@
                                 <input type="file" class="form-control-file" id="imagenes" name="imagenes"
                                        onchange="previsualizar(event)" accept="image/*" multiple required>
                             </div>
-                            <button type="submit" class="btn btn-success upload-button">
+
+                            <div class="mt-3">
+                                <h6>Previsualización:</h6>
+                                <div id="preview" class="d-flex flex-wrap"></div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success upload-button mt-3">
                                 <i class="fas fa-upload"></i> Subir imágenes
                             </button>
                         </form>
-
-                        <div class="mt-3">
-                            <h6>Previsualización:</h6>
-                            <div id="preview" class="d-flex flex-wrap"></div>
-                        </div>
                     </div>
                 </div>
 
@@ -94,7 +95,9 @@
             </div>
 
             <div class="media-footer">
-                <a asp-action="Index" class="btn btn-outline-secondary">Volver a la lista</a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i><span>Volver a la lista</span>
+                </a>
             </div>
         </div>
     </section>
@@ -113,10 +116,10 @@
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         $('#preview').append(`
-                                <div class="m-2">
-                                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-                                </div>
-                            `);
+                                                <div class="m-2">
+                                                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                                </div>
+                                            `);
                     };
                     reader.readAsDataURL(file);
                 });
@@ -183,29 +186,29 @@
                     sorted.forEach(img => {
                         const esPortada = img.orden === 0;
                         html += `
-                                <div class="m-2 position-relative imagen-con-hover" data-id="${img.idImagen}">
-                                    <img src="${img.ruta}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
-                                    ${esPortada ? `
-                                        <span class="badge bg-warning position-absolute top-0 start-0 m-1" style="z-index:10;">
-                                            <i class="fa-solid fa-star"></i> Portada
-                                        </span>
-                                    ` : ''}
-                                    <div class="btn-group-vertical position-absolute top-0 end-0 m-1" style="z-index:10;">
-                                        ${esPortada ? `
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Es la portada">
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                        ` : `
-                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="marcarPortada(${img.idImagen})" title="Marcar como portada">
-                                                <i class="fa-regular fa-star"></i>
-                                            </button>
-                                        `}
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarImagen(${img.idImagen})" title="Eliminar">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
+                                                <div class="m-2 position-relative imagen-con-hover" data-id="${img.idImagen}">
+                                                    <img src="${img.ruta}" class="img-thumbnail" style="max-width: 150px; max-height: 150px;" />
+                                                    ${esPortada ? `
+                                                        <span class="badge bg-warning position-absolute top-0 start-0 m-1" style="z-index:10;">
+                                                            <i class="fa-solid fa-star"></i> Portada
+                                                        </span>
+                                                    ` : ''}
+                                                    <div class="btn-group-vertical position-absolute top-0 end-0 m-1" style="z-index:10;">
+                                                        ${esPortada ? `
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Es la portada">
+                                                                <i class="fa-solid fa-check"></i>
+                                                            </button>
+                                                        ` : `
+                                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="marcarPortada(${img.idImagen})" title="Marcar como portada">
+                                                                <i class="fa-regular fa-star"></i>
+                                                            </button>
+                                                        `}
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarImagen(${img.idImagen})" title="Eliminar">
+                                                            <i class="fa-regular fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            `;
                     });
                     $('#galeriaActual').html(html);
                 } else {

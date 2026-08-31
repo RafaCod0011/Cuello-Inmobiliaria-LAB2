@@ -70,7 +70,9 @@
     </dl>
 
     <form asp-action="Eliminar" asp-route-id="@Model.IdInquilino" class="delete-actions">
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i><span>Volver a la lista</span>
+        </a>
         <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>
             Eliminar inquilino</button>
         </form>

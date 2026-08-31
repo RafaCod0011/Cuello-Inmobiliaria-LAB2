@@ -216,8 +216,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
         }
 
-        // GET: Reserva/Details/5
-        public ActionResult Details(int id)
+        // GET: Reserva/Ver/5
+        public ActionResult Ver(int id)
         {
             try
             {
@@ -232,7 +232,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error en Details");
+                logger.LogError(ex, "Error en Ver");
                 throw;
             }
         }
@@ -251,7 +251,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 if (fechaTerminacion < reserva.FechaInicio)
                 {
                     TempData["Error"] = "La fecha de terminación debe ser posterior a la fecha de inicio.";
-                    return RedirectToAction(nameof(Details), new { id });
+                    return RedirectToAction(nameof(Ver), new { id });
                 }
 
                 // Calcular multa
@@ -281,7 +281,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             {
                 logger.LogError(ex, "Error al terminar reserva");
                 TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(nameof(Ver), new { id });
             }
         }
 
@@ -312,7 +312,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             {
                 logger.LogError(ex, "Error al extender reserva");
                 TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(nameof(Ver), new { id });
             }
         }
 

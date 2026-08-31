@@ -79,6 +79,23 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
         }
 
+        // GET: Inquilino/Ver/5
+        public ActionResult Ver(int id)
+        {
+            try
+            {
+                var entidad = repositorio.ObtenerPorId(id);
+                if (entidad == null)
+                    return NotFound();
+                return View(entidad);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en Ver GET");
+                throw;
+            }
+        }
+
         // GET: Inquilino/Edit/5
         public ActionResult Edit(int id)
         {

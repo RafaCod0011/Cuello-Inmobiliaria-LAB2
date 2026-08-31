@@ -43,7 +43,7 @@
                     <th>@Html.DisplayNameFor(m => m.FechaFin)</th>
                     <th>@Html.DisplayNameFor(m => m.MontoDiario)</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -76,7 +76,7 @@
                         </td>
                         <td>
                             <div class="index-actions" role="group">
-                                <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.IdReserva"
+                                <a class="btn btn-info btn-sm" asp-action="Ver" asp-route-id="@item.IdReserva"
                                    title="Detalles">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>

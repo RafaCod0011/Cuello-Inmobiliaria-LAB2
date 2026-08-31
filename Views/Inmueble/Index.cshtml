@@ -77,7 +77,7 @@
                         <div>
                             <dt>Precio por día</dt>
                             <dd class="property-price">@item.PrecioPorDia.ToString("C", new
-                                                            System.Globalization.CultureInfo("es-AR"))</dd>
+                                                                                                                                                                                                                            System.Globalization.CultureInfo("es-AR"))</dd>
                             </div>
                             <div>
                                 <dt>Reserva</dt>
@@ -93,60 +93,60 @@
                             </div>
                         </dl>
                         <div class="property-actions" role="group" aria-label="Acciones del inmueble">
-                            <a class="btn btn-primary" asp-action="Ver" asp-route-id="@item.IdInmueble" title="Ver inmueble"><i
-                                class="fa-solid fa-eye" aria-hidden="true"></i><span>Ver</span></a>
-                                <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@item.IdInmueble"
-                                   title="Editar inmueble"><i class="fa-solid fa-pen"
-                                                               aria-hidden="true"></i><span>Editar</span></a>
-                                    <a class="btn btn-outline-secondary" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
-                                       title="Gestionar imágenes"><i class="fa-solid fa-images" aria-hidden="true"></i></a>
-                                    <a class="btn btn-outline-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
-                                       title="Eliminar inmueble"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>
-                                </div>
+                            <a class="btn btn-info btn-sm" asp-action="Ver" asp-route-id="@item.IdInmueble"
+                               title="Ver inmueble"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Ver</span></a>
+                            <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.IdInmueble"
+                               title="Editar inmueble"><i class="fa-solid fa-pen"
+                                                           aria-hidden="true"></i><span>Editar</span></a>
+                                <a class="btn btn-warning" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
+                                   title="Gestionar imágenes"><i class="fa-solid fa-images" aria-hidden="true"></i></a>
+                                <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
+                                   title="Eliminar inmueble"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>
                             </div>
-                        </article>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <!-- Paginación -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    @if (Pagina > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </a>
+                        </li>
                     }
-                </div>
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+                        </li>
+                    }
 
-                <!-- Paginación -->
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        @if (Pagina > 1)
-                        {
-                            <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
-                                    <i class="fa-solid fa-angles-left"></i>
-                                </a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
-                            </li>
-                        }
+                    @for (int i = 1; i <= TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Pagina ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
+                        </li>
+                    }
 
-                        @for (int i = 1; i <= TotalPaginas; i++)
-                        {
-                            <li class="page-item @(i == Pagina ? "active" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
-                            </li>
-                        }
-
-                        @if (Pagina < TotalPaginas)
-                        {
-                            <li class="page-item">
-                                <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
-                                    <i class="fa-solid fa-angles-right"></i>
-                                </a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
-                            </li>
-                        }
-                    </ul>
-                </nav>
-            </section>
+                    @if (Pagina < TotalPaginas)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </section>

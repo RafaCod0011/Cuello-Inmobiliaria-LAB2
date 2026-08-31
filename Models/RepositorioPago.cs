@@ -14,6 +14,9 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Alta(Pago p)
         {
+            // Usuario por defecto hasta hacer la autenticacion.
+            if (p.IdUsuarioCreacion <= 0)
+                p.IdUsuarioCreacion = 1;
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -161,6 +164,9 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         private int EjecutarAnulacion(int idPago, int idUsuarioAnulacion)
         {
+            // Usuario por defecto hasta hacer la autenticacion.
+            if (idUsuarioAnulacion <= 0)
+            idUsuarioAnulacion = 1; // Usuario por defecto
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
