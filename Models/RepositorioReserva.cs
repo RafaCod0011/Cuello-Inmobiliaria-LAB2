@@ -78,6 +78,13 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Baja(int id)
         {
+            var reserva = ObtenerPorId(id);
+            if (reserva == null)
+                throw new Exception("La reserva no existe.");
+
+            if (reserva.EstaVigente)
+                throw new Exception("No se puede eliminar una reserva que está vigente.");
+                
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {

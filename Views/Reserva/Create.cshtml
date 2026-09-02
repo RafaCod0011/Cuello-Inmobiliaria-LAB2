@@ -21,11 +21,14 @@
             <div class="edit-fields reservation-fields">
                 <div class="form-group reservation-wide-field">
                     <label asp-for="IdInmueble" class="control-label"></label>
-                    <select asp-for="IdInmueble" class="form-control">
+                    <select asp-for="IdInmueble" class="form-control" id="IdInmueble">
                         <option value="">Seleccionar inmueble</option>
                         @foreach (var item in inmuebles)
                         {
-                            <option value="@item.IdInmueble">@item.Direccion</option>
+                            <option value="@item.IdInmueble"
+                                    data-precio="@item.PrecioPorDia.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                @item.Direccion
+                            </option>
                         }
                     </select>
                     <span asp-validation-for="IdInmueble" class="text-danger"></span>
@@ -88,6 +91,21 @@
                         }
                     }
                 });
+            });
+            $(document).ready(function () {
+                $('#IdInmueble').on('change', function () {
+                    var selected = $(this).find('option:selected');
+                    var precio = selected.data('precio');
+                    if (precio) {
+                        $('#MontoDiario').val(precio);
+                    }
+                });
+
+                // Si ya hay un inmueble seleccionado (ej. en edición), cargar su precio
+                var precioInicial = $('#IdInmueble option:selected').data('precio');
+                if (precioInicial) {
+                    $('#MontoDiario').val(precioInicial);
+                }
             });
         </script>
     }

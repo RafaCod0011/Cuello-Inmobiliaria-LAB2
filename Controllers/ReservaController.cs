@@ -228,6 +228,10 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 CargarRelacion(entidad);
                 entidad.Pagos = repositorioPago.ObtenerPorReserva(id);
 
+                var tienePagoMulta = entidad.Pagos.Any(p => 
+                p.Concepto.StartsWith("Multa por terminación") && !p.Anulado);
+                ViewBag.TienePagoMulta = tienePagoMulta;
+
                 return View(entidad);
             }
             catch (Exception ex)
@@ -264,15 +268,14 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                         Concepto = "Multa por terminación anticipada",
                         FechaPago = DateTime.Today,
                         Importe = montoMulta,
-                        IdReserva = reserva.IdReserva
+                        IdReserva = reserva.IdReserva,
+                        IdUsuarioCreacion = 1 // Usuario por defecto
                     };
                     repositorioPago.Alta(pago);
                 }
 
                 // Actualizar reserva
-                reserva.FechaTerminacionAnticipada = fechaTerminacion;
-                reserva.IdUsuarioTerminacion = 1; // Usuario autenticado
-                repositorio.Modificacion(reserva);
+                repositorio.TerminarAnticipadamente(id, fechaTerminacion, 1); // Usuario por defecto
 
                 TempData["Mensaje"] = $"Reserva terminada anticipadamente. Multa: {montoMulta:C}";
                 return RedirectToAction(nameof(Index));
@@ -315,6 +318,9 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 return RedirectToAction(nameof(Ver), new { id });
             }
         }
+
+        // POST: Reserva/Extender
+        //Validar disponibilidad del inmueble para las fechas nuevas.
 
         // Metodos auxiliares.
         private void CargarListasDesplegables(int? inmuebleSeleccionado = null, int? inquilinoSeleccionado = null)

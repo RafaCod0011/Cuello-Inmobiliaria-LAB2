@@ -217,7 +217,19 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Eliminar POST");
-                TempData["Error"] = ex.Message;
+                if (ex is MySqlConnector.MySqlException mysqlEx && mysqlEx.ErrorCode == MySqlConnector.MySqlErrorCode.RowIsReferenced)
+                {
+                    TempData["Error"] = "No se puede eliminar el inmueble porque tiene reservas asociadas.";
+                }
+                else if (ex.Message.Contains("foreign key constraint fails") || ex.Message.Contains("Cannot delete or update a parent row"))
+                {
+                    TempData["Error"] = "No se puede eliminar el inmueble porque tiene reservas asociadas.";
+                }
+                else
+                {
+                    TempData["Error"] = ex.Message;
+                }
+
                 return RedirectToAction(nameof(Index));
             }
         }

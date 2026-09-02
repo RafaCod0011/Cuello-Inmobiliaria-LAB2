@@ -7,7 +7,15 @@ CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;// . como
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;// . como separador de decimales
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+.AddMvcOptions(options =>
+    {
+        // Personaliza el mensaje para "debe ser un número"
+        options.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(
+            field => $"El campo '{field}' debe ser un número.");
+        
+    });;
+
 builder.Services.AddScoped<IRepositorioPropietario, RepositorioPropietario>();
 builder.Services.AddScoped<IRepositorioInquilino, RepositorioInquilino>();
 builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();

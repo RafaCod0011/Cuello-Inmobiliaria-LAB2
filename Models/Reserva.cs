@@ -73,7 +73,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             get
             {
                 if (FechaTerminacionAnticipada.HasValue)
-                    return FechaTerminacionAnticipada.Value >= DateTime.Today;
+                    return FechaTerminacionAnticipada.Value > DateTime.Today;
                 return FechaFin >= DateTime.Today && FechaInicio <= DateTime.Today;
             }
         }
