@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 31-08-2026 a las 19:51:41
+-- Tiempo de generación: 03-09-2026 a las 21:42:12
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -48,7 +48,8 @@ INSERT INTO `imageninmueble` (`IdImagen`, `Ruta`, `Orden`, `IdInmueble`) VALUES
 (6, '/Uploads/Inmuebles/3/98f6696b-3376-4dde-9ee2-4952e9f15c19.jpg', 0, 3),
 (7, '/Uploads/Inmuebles/4/ee58bf56-285f-4f78-bffd-98b466791357.jpg', 0, 4),
 (8, '/Uploads/Inmuebles/5/b8d5e2d7-6419-4e0b-b13e-2d765e626411.jpg', 0, 5),
-(9, '/Uploads/Inmuebles/6/6d1e7479-141f-4f8e-97d9-6e37b85b5b1a.jpg', 0, 6);
+(9, '/Uploads/Inmuebles/6/6d1e7479-141f-4f8e-97d9-6e37b85b5b1a.jpg', 0, 6),
+(10, '/Uploads/Inmuebles/7/b504bbc9-a139-4466-8dc0-4433232409ec.jpg', 0, 7);
 
 -- --------------------------------------------------------
 
@@ -79,7 +80,8 @@ INSERT INTO `inmueble` (`IdInmueble`, `Direccion`, `Cupo`, `PrecioPorDia`, `Porc
 (3, 'Ruta 8 km 12, La Punta', 8, 300.00, 20.00, 'Suspendido', -33.18200000, -66.30800000, 2, 1),
 (4, 'Calle Belgrano 789, San Luis', 2, 100.00, 40.00, 'Activo', -33.29000000, -66.33000000, 3, 3),
 (5, 'Av. Pringles 1010, San Luis', 5, 180.00, 30.00, 'Activo', -33.30500000, -66.34000000, 4, 2),
-(6, 'Ana Maria Galetti 719', 5, 15000.00, 23.00, 'Activo', -33.29822800, -66.34368400, 2, 1);
+(6, 'Ana Maria Galetti 719', 5, 15000.00, 23.00, 'Activo', -33.29822800, -66.34368400, 2, 1),
+(7, 'Ejercito de los Andes', 2, 1000.00, 50.00, 'Suspendido', -32.35000000, -65.21000000, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -134,7 +136,10 @@ INSERT INTO `pago` (`IdPago`, `Concepto`, `FechaPago`, `Importe`, `Anulado`, `Fe
 (1, 'Seña (20.00%)', '2026-08-28', 700.00, 0, '2026-08-28 16:06:07', NULL, 1, 1, NULL),
 (2, 'Seña (40.00%)', '2026-08-28', 320.00, 0, '2026-08-28 16:24:25', NULL, 2, 1, NULL),
 (3, 'Seña (23.00%)', '2026-08-28', 230.00, 0, '2026-08-28 16:38:47', NULL, 3, 1, NULL),
-(5, 'Multa por terminación anticipada', '2026-08-31', 375.00, 0, '2026-08-31 12:00:35', NULL, 1, 1, NULL);
+(5, 'Multa por terminación anticipada', '2026-08-31', 375.00, 0, '2026-08-31 12:00:35', NULL, 1, 1, NULL),
+(6, 'Multa por terminación anticipada', '2026-09-01', 400.00, 0, '2026-09-01 12:46:53', NULL, 2, 1, NULL),
+(10, 'Seña (20.00%)', '2026-09-03', 120.00, 0, '2026-09-03 16:16:25', NULL, 7, 1, NULL),
+(11, 'Seña (50.00%)', '2026-09-03', 1500.00, 0, '2026-09-03 16:18:49', NULL, 8, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -186,9 +191,11 @@ CREATE TABLE `reserva` (
 --
 
 INSERT INTO `reserva` (`IdReserva`, `FechaInicio`, `FechaFin`, `MontoDiario`, `FechaCreacion`, `FechaTerminacionAnticipada`, `IdInmueble`, `IdInquilino`, `IdUsuarioCreacion`, `IdUsuarioTerminacion`) VALUES
-(1, '2026-08-29', '2026-09-05', 500.00, '2026-08-28 16:06:07', NULL, 1, 1, 1, NULL),
-(2, '2026-09-01', '2026-09-05', 200.00, '2026-08-28 16:24:25', NULL, 4, 2, 1, NULL),
-(3, '2026-09-01', '2026-09-05', 200.00, '2026-08-28 16:38:47', NULL, 6, 4, 1, NULL);
+(1, '2026-08-29', '2026-09-05', 500.00, '2026-08-28 16:06:07', '2026-08-30', 1, 1, 1, 1),
+(2, '2026-09-01', '2026-09-05', 200.00, '2026-08-28 16:24:25', '2026-09-01', 4, 2, 1, 1),
+(3, '2026-09-01', '2026-09-05', 200.00, '2026-08-28 16:38:47', NULL, 6, 4, 1, NULL),
+(7, '2026-09-03', '2026-09-04', 300.00, '2026-09-03 16:16:25', NULL, 3, 3, 1, NULL),
+(8, '2026-09-18', '2026-09-22', 1000.00, '2026-09-03 16:18:49', NULL, 7, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -312,13 +319,13 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `imageninmueble`
 --
 ALTER TABLE `imageninmueble`
-  MODIFY `IdImagen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `IdImagen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `inmueble`
 --
 ALTER TABLE `inmueble`
-  MODIFY `IdInmueble` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `IdInmueble` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `inquilino`
@@ -330,7 +337,7 @@ ALTER TABLE `inquilino`
 -- AUTO_INCREMENT de la tabla `pago`
 --
 ALTER TABLE `pago`
-  MODIFY `IdPago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `IdPago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `propietario`
@@ -342,13 +349,13 @@ ALTER TABLE `propietario`
 -- AUTO_INCREMENT de la tabla `reserva`
 --
 ALTER TABLE `reserva`
-  MODIFY `IdReserva` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `IdReserva` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `tipoinmueble`
 --
 ALTER TABLE `tipoinmueble`
-  MODIFY `IdTipo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `IdTipo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario`

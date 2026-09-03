@@ -83,6 +83,11 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             get { return FechaTerminacionAnticipada.HasValue; }
         }
 
+        public bool EsProxima
+        {
+            get { return !EstaTerminada && FechaInicio > DateTime.Today; }
+        }
+
         public override string ToString()
         {
             return $"Reserva #{IdReserva} - {Inmueble?.Direccion ?? "N/A"}";

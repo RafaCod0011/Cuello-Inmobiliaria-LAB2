@@ -82,35 +82,41 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         {
             try
             {
+                if (reserva.FechaInicio < DateTime.Today)
+                {
+                    ModelState.AddModelError("FechaInicio", "La fecha de inicio no puede ser anterior al día de hoy.");
+                }
+                if (reserva.FechaFin < DateTime.Today)
+                {
+                    ModelState.AddModelError("FechaFin", "La fecha de fin no puede ser anterior al día de hoy.");
+                }
                 if (reserva.FechaFin < reserva.FechaInicio)
                 {
                     ModelState.AddModelError("", "La fecha de fin debe ser posterior a la fecha de inicio.");
+                }
+
+                if (!ModelState.IsValid)
+                {
                     CargarListasDesplegables();
                     return View(reserva);
                 }
+                reserva.IdUsuarioCreacion = 1;
+                reserva.FechaCreacion = DateTime.Now;
 
-                if (ModelState.IsValid)
-                {
-                    reserva.FechaCreacion = DateTime.Now;
-
-                    repositorio.Alta(reserva);
-                    TempData["Mensaje"] = "Reserva creada correctamente";
-
-                    // Registrar pago inicial (seña)
-                    RegistrarPagoInicial(reserva);
-
-                    return RedirectToAction(nameof(Index));
+                repositorio.Alta(reserva);
+                //Seña inicial
+                RegistrarPagoInicial(reserva);
+                TempData["Mensaje"] = "Reserva creada correctamente";
+                return RedirectToAction(nameof(Index));
+                        
                 }
-                CargarListasDesplegables();
-                return View(reserva);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error en Create POST");
-                ModelState.AddModelError("", ex.Message);
-                CargarListasDesplegables();
-                return View(reserva);
-            }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error en Create POST");
+                    ModelState.AddModelError("", ex.Message);
+                    CargarListasDesplegables();
+                    return View(reserva);
+                }
         }
 
         // GET: Reserva/Edit/5
@@ -143,30 +149,48 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, Reserva entidad)
         {
-            if (entidad.FechaFin < entidad.FechaInicio)
-            {
-                ModelState.AddModelError("", "La fecha de fin debe ser posterior a la fecha de inicio.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
-                return View(entidad);
-            }
-
             try
             {
-                var r = repositorio.ObtenerPorId(id);
-                if (r == null)
+                var reservaOriginal = repositorio.ObtenerPorId(id);
+                if (reservaOriginal == null)
                     return NotFound();
 
-                r.FechaInicio = entidad.FechaInicio;
-                r.FechaFin = entidad.FechaFin;
-                r.MontoDiario = entidad.MontoDiario;
-                r.IdInmueble = entidad.IdInmueble;
-                r.IdInquilino = entidad.IdInquilino;
+                //Si la reserva ya empezo, no permitir modificar fechas
+                if (reservaOriginal.FechaInicio <= DateTime.Today)
+                {
+                    if (entidad.FechaInicio != reservaOriginal.FechaInicio || 
+                        entidad.FechaFin != reservaOriginal.FechaFin)
+                    {
+                        ModelState.AddModelError("", "No se pueden modificar las fechas de una reserva que ya comenzó.");
+                        CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
+                        return View(entidad);
+                    }
+                }
+                else
+                {
+                    // Si no empezo, validar fechas
+                    if (entidad.FechaInicio < DateTime.Today)
+                    {
+                        ModelState.AddModelError("FechaInicio", "La fecha de inicio no puede ser anterior al día de hoy.");
+                    }
+                    if (entidad.FechaFin < entidad.FechaInicio)
+                    {
+                        ModelState.AddModelError("", "La fecha de fin debe ser posterior a la fecha de inicio.");
+                    }
+                    if (!ModelState.IsValid)
+                    {
+                        CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
+                        return View(entidad);
+                    }
+                }
+                reservaOriginal.FechaInicio = entidad.FechaInicio;
+                reservaOriginal.FechaFin = entidad.FechaFin;
+                reservaOriginal.MontoDiario = entidad.MontoDiario;
+                reservaOriginal.IdInmueble = entidad.IdInmueble;
+                reservaOriginal.IdInquilino = entidad.IdInquilino;
 
-                repositorio.Modificacion(r);
+                repositorio.Modificacion(reservaOriginal);
+
                 TempData["Mensaje"] = "Reserva modificada correctamente";
                 return RedirectToAction(nameof(Index));
             }
@@ -230,8 +254,11 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 
                 var tienePagoMulta = entidad.Pagos.Any(p => 
                 p.Concepto.StartsWith("Multa por terminación") && !p.Anulado);
+                bool puedeTerminar = !entidad.EstaTerminada && 
+                             (entidad.EstaVigente || entidad.EsProxima) && 
+                             !tienePagoMulta;
                 ViewBag.TienePagoMulta = tienePagoMulta;
-
+                ViewBag.PuedeTerminar = puedeTerminar;
                 return View(entidad);
             }
             catch (Exception ex)
