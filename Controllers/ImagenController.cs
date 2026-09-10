@@ -2,6 +2,7 @@ using Cuello_Inmobiliaria_LAB2.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 
 namespace Cuello_Inmobiliaria_LAB2.Controllers
 {
+    [Authorize]
     public class ImagenesController : Controller
     {
         private readonly IRepositorioImagen repositorio;
@@ -43,7 +45,6 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
         }
 
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Alta(int id, List<IFormFile> imagenes)
         {

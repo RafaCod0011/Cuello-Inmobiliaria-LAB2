@@ -2,6 +2,7 @@ using Cuello_Inmobiliaria_LAB2.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -11,7 +12,9 @@ using System.Threading.Tasks;
 
 
 namespace Cuello_Inmobiliaria_LAB2.Controllers
+
 {
+	[Authorize]
     public class PropietarioController : Controller
     {
         private readonly IRepositorioPropietario repositorio;
@@ -88,6 +91,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         // GET: Propietarios/Delete/5
+		[Authorize(Policy = "Administrador")]
 		public ActionResult Eliminar(int id)
 		{
 			try
@@ -104,6 +108,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
 
 		// POST: Propietarios/Delete/5
 		[HttpPost]
+		[Authorize(Policy = "Administrador")]
 		[ValidateAntiForgeryToken]
 		public ActionResult Eliminar(int id, Propietario entidad)
 		{

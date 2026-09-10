@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Cuello_Inmobiliaria_LAB2.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Cuello_Inmobiliaria_LAB2.Controllers
 
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IRepositorioPropietario propietarios;
@@ -34,6 +36,12 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [AllowAnonymous] // Permite acceso público.
+        public IActionResult Restringido()
+        {
+            return View();
         }
     }
 }

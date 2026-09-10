@@ -1,5 +1,6 @@
 using Cuello_Inmobiliaria_LAB2.Models;
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,11 +21,29 @@ builder.Services.AddScoped<IRepositorioPropietario, RepositorioPropietario>();
 builder.Services.AddScoped<IRepositorioInquilino, RepositorioInquilino>();
 builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();
 builder.Services.AddScoped<IRepositorioTipoInmueble, RepositorioTipoInmueble>();
-builder.Services.AddScoped<IRepositorioInmueble, RepositorioInmueble>();
 builder.Services.AddScoped<IRepositorioImagen, RepositorioImagen>();
 builder.Services.AddScoped<IRepositorioReserva, RepositorioReserva>();
 builder.Services.AddScoped<IRepositorioPago, RepositorioPago>();
-builder.Services.AddScoped<IRepositorioTipoInmueble, RepositorioTipoInmueble>();
+builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
+
+// Autenticacion y Autorizacion
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Usuario/Login";
+        options.LogoutPath = "/Usuario/Logout";
+        options.AccessDeniedPath = "/Home/Restringido";
+        options.Cookie.Name = "CuelloInmobiliariaCookie";
+        options.Cookie.HttpOnly = true;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
+    options.AddPolicy("Empleado", policy => policy.RequireRole("Administrador", "Empleado"));
+});
 
 var app = builder.Build();
 
@@ -39,6 +58,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

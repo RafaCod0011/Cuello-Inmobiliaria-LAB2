@@ -677,6 +677,232 @@ body {
   }
 }
 
+/* ---------- Modulo de usuarios ---------- */
+.user-page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-top: 1rem;
+}
+
+.user-header {
+  width: 100%;
+  margin: 0 auto 1.5rem;
+}
+
+.user-listing,
+.user-panel-shell {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.user-listing {
+  margin-top: 0.5rem;
+}
+
+.user-table-wrapper {
+  border-radius: 0.9rem;
+}
+
+.user-table tbody td:nth-child(6) {
+  min-width: 6rem;
+}
+
+.user-card {
+  width: min(100%, 56rem);
+}
+
+.user-form-layout {
+  padding-top: 1.5rem;
+}
+
+.user-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  width: 100%;
+}
+
+.user-field {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.user-field-full {
+  grid-column: 1 / -1;
+}
+
+.user-field label {
+  color: #344054;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-field .form-control {
+  min-height: 2.75rem;
+  border-color: #cbd8ce;
+}
+
+.user-field .form-control:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+.user-avatar-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  padding: 1rem;
+  background: #f7faf8;
+  border: 1px solid #dfe9e1;
+  border-radius: 0.65rem;
+}
+
+.user-avatar-preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #dfe3f3;
+  box-shadow: 0 0.5rem 1.25rem rgba(30, 41, 59, 0.12);
+}
+
+.user-preview-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #f7faf8;
+  border: 1px solid #dfe9e1;
+  border-radius: 0.65rem;
+}
+
+.user-empty-avatar {
+  color: #667085;
+  font-weight: 600;
+}
+
+.user-empty-avatar.large {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5rem;
+  font-size: 0.9rem;
+}
+
+.user-avatar-mini {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #dfe3f3;
+}
+
+.user-inline-button {
+  width: fit-content;
+  margin-top: 0.5rem;
+}
+
+.user-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e6eee8;
+}
+
+.user-actions-row .btn {
+  min-width: 9rem;
+  padding: 0.65rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.user-save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 9rem;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+}
+
+.user-save-button i {
+  font-size: 1rem;
+}
+
+.user-detail-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.user-modal .modal-content {
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2.5rem rgba(20, 83, 45, 0.15);
+}
+
+.user-modal .modal-header,
+.user-modal .modal-footer {
+  border-color: #e6eee8;
+}
+
+.user-detail-page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding-top: 1rem;
+}
+
+.user-header {
+  width: 100%;
+  margin: 0 auto 1.5rem;
+}
+
+.user-detail-card {
+  width: min(100%, 56rem);
+  margin: 0 auto;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2.5rem rgba(20, 83, 45, 0.12);
+}
+
+.user-detail-body {
+  padding: 1.75rem 2.25rem 2rem;
+}
+
+.user-detail-list {
+  margin: 0;
+}
+
+.user-form-edit {
+  margin: 0;
+}
+
+@media (max-width: 767.98px) {
+  .user-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .user-detail-body {
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+
+  .user-actions-row {
+    flex-direction: column-reverse;
+  }
+
+  .user-actions-row .btn {
+    width: 100%;
+  }
+}
+
 /* ---------- Ajustes del modulo de inmuebles ---------- */
 .inmueble-card {
   width: min(100%, 64rem);
@@ -980,6 +1206,227 @@ body {
 .type-index-table tbody td:nth-child(2) {
   color: #19352a;
   font-weight: 600;
+}
+
+/* ---------- Login ---------- */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 10rem);
+  padding: 2rem 0 3rem;
+}
+
+.login-card {
+  display: grid;
+  grid-template-columns: 1.05fr 1.35fr;
+  width: min(100%, 58rem);
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  border-radius: 1.15rem;
+  box-shadow: 0 1rem 2.5rem rgba(20, 83, 45, 0.14);
+}
+
+.login-illustration {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d7f48 0%, #0c5d3c 50%, #0a4730 100%);
+}
+
+.login-badge {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1.35rem;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  font-size: 1.8rem;
+}
+
+.login-illustration h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 4vw, 2.3rem);
+  font-weight: 700;
+}
+
+.login-illustration p {
+  margin: 0.8rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.login-panel {
+  padding: 2.2rem 2rem 2rem;
+}
+
+.login-header {
+  margin-bottom: 1.5rem;
+}
+
+.login-eyebrow {
+  margin: 0 0 0.3rem;
+  color: #087443;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-header h1 {
+  margin: 0;
+  color: #19352a;
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  font-weight: 700;
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-form .form-group {
+  margin: 0;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #344054;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.login-form .form-control {
+  min-height: 2.9rem;
+  border-color: #cbd8ce;
+}
+
+.login-form .form-control:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+.login-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.login-actions .btn {
+  min-width: 9rem;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .login-illustration {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+
+  .login-panel {
+    padding: 1.5rem 1.25rem 1.5rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .login-page {
+    padding-top: 1rem;
+  }
+
+  .login-actions {
+    flex-direction: column-reverse;
+  }
+
+  .login-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ---------- Acceso restringido ---------- */
+.access-denied-page {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 4rem;
+}
+
+.access-denied-card {
+  width: min(100%, 42rem);
+  padding: 2.25rem 2rem;
+  background: #ffffff;
+  border: 1px solid rgba(20, 83, 45, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2.5rem rgba(20, 83, 45, 0.14);
+  text-align: center;
+}
+
+.access-denied-icon {
+  display: grid;
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto 1.25rem;
+  place-items: center;
+  color: #b42318;
+  background: linear-gradient(135deg, #fff1f2, #fee4e2);
+  border: 1px solid #f7c7c3;
+  border-radius: 50%;
+  font-size: 2rem;
+}
+
+.access-denied-card h1 {
+  margin: 0;
+  color: #19352a;
+  font-size: clamp(1.8rem, 4vw, 2.3rem);
+  font-weight: 700;
+}
+
+.access-denied-message {
+  margin: 0.85rem auto 0;
+  max-width: 30rem;
+  color: #667085;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.access-denied-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.access-denied-actions .btn {
+  min-width: 10rem;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .access-denied-page {
+    padding: 1rem 0 2rem;
+  }
+
+  .access-denied-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .access-denied-actions {
+    flex-direction: column;
+  }
+
+  .access-denied-actions .btn {
+    width: 100%;
+  }
 }
 
 /* ---------- Detalle y galeria de inmuebles ---------- */

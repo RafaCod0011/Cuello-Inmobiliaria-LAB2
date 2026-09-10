@@ -7,19 +7,20 @@ using System.Threading.Tasks;
 namespace Cuello_Inmobiliaria_LAB2.Models
 {
     public class CambioClaveView
-	{
-		[DataType(DataType.Password)]
-		public string ClaveVieja { get; set; } = "";
+    {
+        public int Id { get; set; }
+        [DataType(DataType.Password)]
+        public string ClaveVieja { get; set; } = "";
 
-		[Required(ErrorMessage = "La nueva contraseña es requerida")]
-		[StringLength(50, ErrorMessage = "La clave debe tener entre 3 y 50 caracteres", MinimumLength = 3)]
-		[DataType(DataType.Password)]
-		public string ClaveNueva { get; set; } = "";
+        [Required(ErrorMessage = "La nueva contraseña es requerida")]
+        [StringLength(50, ErrorMessage = "La clave debe tener entre 3 y 50 caracteres", MinimumLength = 3)]
+        [DataType(DataType.Password)]
+        public string ClaveNueva { get; set; } = "";
 
-		[Required(ErrorMessage = "Debe repetir la contraseña nueva")]
-		[StringLength(50, ErrorMessage = "La clave debe tener entre 3 y 50 caracteres", MinimumLength = 3)]
-		[DataType(DataType.Password)]
-		[Compare("ClaveNueva")]
-		public string ClaveRepeticion { get; set; } = "";
-	}
+        [Required(ErrorMessage = "Debe repetir la contraseña nueva")]
+        [StringLength(50, ErrorMessage = "La clave debe tener entre 3 y 50 caracteres", MinimumLength = 3)]
+        [DataType(DataType.Password)]
+        [Compare("ClaveNueva", ErrorMessage = "Las contraseñas no coinciden")]
+        public string ClaveRepeticion { get; set; } = "";
+    }
 }

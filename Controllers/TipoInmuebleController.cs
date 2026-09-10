@@ -1,10 +1,12 @@
 using Cuello_Inmobiliaria_LAB2.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;   
 using Microsoft.Extensions.Logging;
 using System;
 
 namespace Cuello_Inmobiliaria_LAB2.Controllers
 {
+    [Authorize]
     public class TipoInmuebleController : Controller
     {
         private readonly IRepositorioTipoInmueble repositorio;
@@ -111,6 +113,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         // GET: TipoInmueble/Delete/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -130,6 +133,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         // POST: TipoInmueble/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, TipoInmueble entidad)
         {
             try
