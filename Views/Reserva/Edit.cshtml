@@ -4,6 +4,25 @@
     ViewData["Title"] = "Editar Reserva";
     var inmuebles = (IList<Cuello_Inmobiliaria_LAB2.Models.Inmueble>)ViewBag.Inmuebles;
     var inquilinos = (IList<Cuello_Inmobiliaria_LAB2.Models.Inquilino>)ViewBag.Inquilinos;
+
+    var yaComenzo = Model.FechaInicio <= DateTime.Today;
+    var estaFinalizada = Model.FechaFin < DateTime.Today;
+    var estaTerminada = Model.EstaTerminada;
+
+    var extensiones = (IList<Cuello_Inmobiliaria_LAB2.Models.Reserva>)ViewBag.Extensiones
+                        ?? new List<Cuello_Inmobiliaria_LAB2.Models.Reserva>();
+    var tieneExtensiones = extensiones.Any();
+
+    // Bloquea edición completa si ya comenzó, finalizó, terminó o tiene extensiones
+    var bloqueado = yaComenzo || estaFinalizada || estaTerminada || tieneExtensiones;
+
+    // Tiene pagos no anulados
+    var tienePagos = ((IList<Cuello_Inmobiliaria_LAB2.Models.Pago>)ViewBag.Pagos
+                        ?? new List<Cuello_Inmobiliaria_LAB2.Models.Pago>())
+                        .Any(p => !p.Anulado);
+
+    // Puede editar
+    var puedeEditar = !bloqueado;
 }
 
 <section class="edit-page">
@@ -17,86 +36,162 @@
             </div>
         </header>
 
-        <p class="text-danger">Solo para la segunda entrega. Para el sistema final, se debe implementar la funcionalidad
-            de
-            renovacion/extension, asi la reserva original queda como registro historico.</p>
-            <form asp-action="Edit" asp-route-id="@Model.IdReserva" class="edit-form">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="IdReserva" />
-                <div class="edit-fields reservation-fields">
-                    <div class="form-group reservation-wide-field">
-                        <label asp-for="IdInmueble" class="control-label"></label>
-                        <select asp-for="IdInmueble" class="form-control">
-                            <option value="">Seleccionar inmueble</option>
-                            @foreach (var item in inmuebles)
-                            {
-                                <option value="@item.IdInmueble">@item.Direccion</option>
-                            }
-                        </select>
-                        <span asp-validation-for="IdInmueble" class="text-danger"></span>
-                    </div>
-                    <div class="form-group reservation-wide-field">
-                        <label asp-for="IdInquilino" class="control-label"></label>
-                        <select asp-for="IdInquilino" class="form-control select2">
-                            @if (ViewBag.InquilinoId != null)
-                            {
-                                <option value="@ViewBag.InquilinoId" selected>@ViewBag.InquilinoSeleccionado</option>
-                            }
-                        </select>
-                        <span asp-validation-for="IdInquilino" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="FechaInicio" class="control-label"></label>
-                        <input asp-for="FechaInicio" class="form-control" type="date" />
-                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="FechaFin" class="control-label"></label>
-                        <input asp-for="FechaFin" class="form-control" type="date" />
-                        <span asp-validation-for="FechaFin" class="text-danger"></span>
-                    </div>
-                    <div class="form-group reservation-wide-field">
-                        <label asp-for="MontoDiario" class="control-label"></label>
-                        <input asp-for="MontoDiario" class="form-control" />
-                        <span asp-validation-for="MontoDiario" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="edit-actions">
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i><span>Volver a la lista</span>
-                    </a>
-                    <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
-                        Guardar cambios</button>
-                    </div>
-                </form>
+        @if (tieneExtensiones)
+        {
+            <div class="alert alert-warning m-3">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                Esta reserva tiene <strong>@extensiones.Count extensión(es) asociada(s)</strong>.
+                No se puede editar mientras existan.
+                <hr />
+                <p class="mb-2"><strong>Extensiones:</strong></p>
+                <ul class="list-unstyled mb-2">
+                    @foreach (var ext in extensiones)
+                    {
+                        <li class="mb-1">
+                            <a asp-action="Ver" asp-route-id="@ext.IdReserva" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-calendar-plus me-1"></i>
+                                Reserva #@ext.IdReserva
+                                (@ext.FechaInicio.ToString("dd/MM/yyyy") - @ext.FechaFin.ToString("dd/MM/yyyy"))
+                            </a>
+                        </li>
+                    }
+                </ul>
             </div>
-        </section>
-
-        @section Scripts {
-            @{
-                await Html.RenderPartialAsync("_ValidationScriptsPartial");
-            }
-            <script>
-                $(document).ready(function () {
-                    $('#IdInquilino').select2({
-                        language: "es",
-                        theme: 'bootstrap-5',
-                        placeholder: "Buscar inquilino por nombre, apellido o DNI...",
-                        minimumInputLength: 2,
-                        allowClear: true,
-                        ajax: {
-                            delay: 250,
-                            dataType: "json",
-                            cache: true,
-                            url: function (params) {
-                                let q = params.term ? encodeURIComponent(params.term) : "";
-                                return '@Url.Action("Buscar", "Inquilino")?term=' + q;
-                            },
-                            processResults: function (data) {
-                                return { results: data };
-                            }
-                        }
-                    });
-                });
-            </script>
         }
+        else if (estaTerminada)
+        {
+            <div class="alert alert-warning m-3">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                Esta reserva fue <strong>terminada anticipadamente</strong>. No se puede editar.
+            </div>
+        }
+        else if (estaFinalizada)
+        {
+            <div class="alert alert-warning m-3">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                Esta reserva ya <strong>finalizó</strong>. No se puede editar.
+            </div>
+        }
+        else if (yaComenzo)
+        {
+            <div class="alert alert-info m-3">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Esta reserva está <strong>vigente</strong>. No se pueden modificar fechas, inmueble ni inquilino.
+            </div>
+        }
+
+        @if (tienePagos && !bloqueado)
+        {
+            <div class="alert alert-info m-3">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Esta reserva ya tiene <strong>pagos registrados</strong>. No se puede modificar el monto diario.
+            </div>
+        }
+
+        <form asp-action="Edit" asp-route-id="@Model.IdReserva" class="edit-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdReserva" />
+
+            <div class="edit-fields reservation-fields">
+                <div class="form-group reservation-wide-field">
+                    <label asp-for="IdInmueble" class="control-label"></label>
+                    <select asp-for="IdInmueble" class="form-control" disabled="@bloqueado">
+                        <option value="">Seleccionar inmueble</option>
+                        @foreach (var item in inmuebles)
+                        {
+                            <option value="@item.IdInmueble">@item.Direccion</option>
+                        }
+                    </select>
+                    <span asp-validation-for="IdInmueble" class="text-danger"></span>
+                </div>
+
+                <div class="form-group reservation-wide-field">
+                    <label asp-for="IdInquilino" class="control-label"></label>
+                    <select asp-for="IdInquilino" class="form-control select2" disabled="@bloqueado">
+                        @if (ViewBag.InquilinoId != null)
+                        {
+                            <option value="@ViewBag.InquilinoId" selected>@ViewBag.InquilinoSeleccionado</option>
+                        }
+                    </select>
+                    <span asp-validation-for="IdInquilino" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="FechaInicio" class="control-label"></label>
+                    <input asp-for="FechaInicio" class="form-control" type="date" disabled="@bloqueado" />
+                    <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="FechaFin" class="control-label"></label>
+                    <input asp-for="FechaFin" class="form-control" type="date" disabled="@bloqueado" />
+                    <span asp-validation-for="FechaFin" class="text-danger"></span>
+                </div>
+
+                <div class="form-group reservation-wide-field">
+                    <label asp-for="MontoDiario" class="control-label"></label>
+
+                    @if (bloqueado)
+                    {
+                        <input asp-for="MontoDiario" class="form-control" disabled />
+                    }
+                    else if (tienePagos)
+                    {
+                        <input class="form-control"
+                               value="@Model.MontoDiario.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                               disabled />
+                        <input type="hidden" asp-for="MontoDiario" />
+                        <small class="text-muted">No se puede modificar porque ya tiene pagos registrados.</small>
+                    }
+                    else
+                    {
+                        <input asp-for="MontoDiario" class="form-control" />
+                    }
+
+                    <span asp-validation-for="MontoDiario" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="edit-actions">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2" aria-hidden="true"></i><span>Volver a la lista</span>
+                </a>
+                @if (puedeEditar)
+                {
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar cambios
+                    </button>
+                }
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('#IdInquilino').select2({
+                language: "es",
+                theme: 'bootstrap-5',
+                placeholder: "Buscar inquilino por nombre, apellido o DNI...",
+                minimumInputLength: 2,
+                allowClear: true,
+                ajax: {
+                    delay: 250,
+                    dataType: "json",
+                    cache: true,
+                    url: function (params) {
+                        let q = params.term ? encodeURIComponent(params.term) : "";
+                        return '@Url.Action("Buscar", "Inquilino")?term=' + q;
+                    },
+                    processResults: function (data) {
+                        return { results: data };
+                    }
+                }
+            });
+        });
+    </script>
+}

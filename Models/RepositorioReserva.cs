@@ -43,9 +43,6 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Alta(Reserva r)
         {
-            // Valores por defecto al no tener autenticacion implementada todavia.
-            if (r.IdUsuarioCreacion <= 0)
-                r.IdUsuarioCreacion = 1;
             if (!EstaDisponible(r.IdInmueble, r.FechaInicio, r.FechaFin))
                 throw new Exception("El inmueble no está disponible en las fechas seleccionadas.");
 
@@ -54,8 +51,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     INSERT INTO Reserva 
-                    (FechaInicio, FechaFin, MontoDiario, FechaCreacion, IdInmueble, IdInquilino, IdUsuarioCreacion)
-                    VALUES (@fechaInicio, @fechaFin, @montoDiario, @fechaCreacion, @idInmueble, @idInquilino, @idUsuarioCreacion);
+                    (FechaInicio, FechaFin, MontoDiario, FechaCreacion, IdInmueble, IdInquilino, IdUsuarioCreacion, IdReservaOrigen)
+                    VALUES (@fechaInicio, @fechaFin, @montoDiario, @fechaCreacion, @idInmueble, @idInquilino, @idUsuarioCreacion, @idReservaOrigen);
                     SELECT LAST_INSERT_ID();
                 ";
                 using (var command = new MySqlCommand(sql, connection))
@@ -67,6 +64,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
                     command.Parameters.AddWithValue("@idInmueble", r.IdInmueble);
                     command.Parameters.AddWithValue("@idInquilino", r.IdInquilino);
                     command.Parameters.AddWithValue("@idUsuarioCreacion", r.IdUsuarioCreacion);
+                    command.Parameters.AddWithValue("@idReservaOrigen", r.IdReservaOrigen);
                     connection.Open();
                     res = Convert.ToInt32(command.ExecuteScalar());
                     r.IdReserva = res;
@@ -84,7 +82,13 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
             if (reserva.EstaVigente)
                 throw new Exception("No se puede eliminar una reserva que está vigente.");
-                
+
+            // Verificar si esta reserva tiene extensiones
+            var todas = ObtenerLista(1, int.MaxValue);
+            bool tieneExtensiones = todas.Any(r => r.IdReservaOrigen == id);
+            if (tieneExtensiones)
+                throw new Exception("No se puede eliminar una reserva que tiene extensiones asociadas.");
+
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -137,7 +141,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = $@"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion, 
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     LIMIT {tamPagina} OFFSET {(pagina - 1) * tamPagina}
                 ";
@@ -178,7 +182,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE IdReserva = @id
                 ";
@@ -204,7 +208,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE IdInmueble = @idInmueble
                 ";
@@ -230,7 +234,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE IdInquilino = @idInquilino
                 ";
@@ -257,7 +261,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE (FechaTerminacionAnticipada IS NULL OR FechaTerminacionAnticipada >= @hoy)
                     AND FechaFin >= @hoy
@@ -287,7 +291,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE (FechaTerminacionAnticipada IS NULL OR FechaTerminacionAnticipada >= @hoy)
                     AND FechaFin >= @hoy
@@ -316,7 +320,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             {
                 string sql = @"
                     SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion
+                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
                     FROM Reserva
                     WHERE (FechaInicio >= @desde AND FechaInicio <= @hasta)
                        OR (FechaFin >= @desde AND FechaFin <= @hasta)
@@ -340,9 +344,6 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public void TerminarAnticipadamente(int idReserva, DateTime fechaTerminacion, int idUsuarioTerminacion)
         {       
-            // Valores por defecto al no tener autenticacion implementada todavia.
-            if (idUsuarioTerminacion <= 0)
-                idUsuarioTerminacion = 1;
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"
@@ -375,7 +376,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
                 IdInmueble = reader.GetInt32(nameof(Reserva.IdInmueble)),
                 IdInquilino = reader.GetInt32(nameof(Reserva.IdInquilino)),
                 IdUsuarioCreacion = reader.GetInt32(nameof(Reserva.IdUsuarioCreacion)),
-                IdUsuarioTerminacion = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.IdUsuarioTerminacion))) ? (int?)null : reader.GetInt32(nameof(Reserva.IdUsuarioTerminacion))
+                IdUsuarioTerminacion = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.IdUsuarioTerminacion))) ? (int?)null : reader.GetInt32(nameof(Reserva.IdUsuarioTerminacion)),
+                IdReservaOrigen = reader.IsDBNull(reader.GetOrdinal("IdReservaOrigen")) ? (int?)null : reader.GetInt32("IdReservaOrigen")
             };
         }
     }

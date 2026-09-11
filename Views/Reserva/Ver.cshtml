@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = $"Detalles de Reserva #{Model.IdReserva}";
+    var extensiones = (IList<Cuello_Inmobiliaria_LAB2.Models.Reserva>)ViewBag.Extensiones
+                        ?? new List<Cuello_Inmobiliaria_LAB2.Models.Reserva>();
+    var reservaOrigen = (Cuello_Inmobiliaria_LAB2.Models.Reserva)ViewBag.ReservaOrigen;
 }
 
 <section class="details-page">
@@ -14,7 +17,19 @@
                 <p class="edit-description">Consulte el estado y la información completa.</p>
             </div>
         </header>
+
         <div class="reservation-details-content">
+            @if (reservaOrigen != null)
+            {
+                <div class="alert alert-info">
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    Esta reserva es una <strong>extensión</strong> de la reserva
+                    <a asp-action="Ver" asp-route-id="@reservaOrigen.IdReserva" class="alert-link">
+                        #@reservaOrigen.IdReserva
+                    </a>
+                </div>
+            }
+
             <dl class="details-list">
                 <div class="details-row">
                     <dt>@Html.DisplayNameFor(m => m.IdReserva)</dt>
@@ -74,7 +89,61 @@
                 </div>
             </dl>
 
-            <h4>Pagos asociados</h4>
+            @if (extensiones.Any())
+            {
+                <h4 class="mt-4">Extensiones</h4>
+                <div class="index-table-wrapper">
+                    <table class="table index-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Fecha de inicio</th>
+                                <th>Fecha de fin</th>
+                                <th>Monto diario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ext in extensiones)
+                            {
+                                <tr>
+                                    <td>#@ext.IdReserva</td>
+                                    <td>@ext.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                    <td>@ext.FechaFin.ToString("dd/MM/yyyy")</td>
+                                    <td>@ext.MontoDiario.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
+                                    <td>
+                                        @if (ext.EstaTerminada)
+                                        {
+                                            <span class="badge bg-danger">Terminada</span>
+                                        }
+                                        else if (ext.EstaVigente)
+                                        {
+                                            <span class="badge bg-success">Vigente</span>
+                                        }
+                                        else if (ext.FechaFin < DateTime.Today)
+                                        {
+                                            <span class="badge bg-secondary">Finalizada</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">Próxima</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Ver" asp-route-id="@ext.IdReserva" class="btn btn-info btn-sm"
+                                           title="Ver extensión">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <h4 class="mt-4">Pagos asociados</h4>
             @if (Model.Pagos != null && Model.Pagos.Any())
             {
                 <div class="index-table-wrapper">
@@ -119,11 +188,11 @@
                         <i class="fa-solid fa-xmark me-2" aria-hidden="true"></i><span>Terminar anticipadamente</span>
                     </button>
                 }
-                @if (Model.EstaVigente)
+                @if (!Model.EstaTerminada && (Model.EstaVigente || Model.EsProxima))
                 {
-                    <button type="button" class="btn btn-warning">
-                        <i class="fa-solid fa-calendar-plus me-2" aria-hidden="true"></i><span>Extender reserva</span>
-                    </button>
+                    <a asp-action="Extender" asp-route-id="@Model.IdReserva" class="btn btn-success">
+                        <i class="fa-solid fa-calendar-plus"></i> Extender
+                    </a>
                 }
             </div>
 

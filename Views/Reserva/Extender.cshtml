@@ -1,0 +1,85 @@
+@model Cuello_Inmobiliaria_LAB2.Models.Reserva
+
+@{
+    ViewData["Title"] = "Extender Reserva";
+    var reservaOriginal = (Cuello_Inmobiliaria_LAB2.Models.Reserva)ViewBag.ReservaOriginal;
+}
+
+<section class="edit-page">
+    <div class="edit-card reservation-card">
+        <header class="edit-card-header">
+            <div class="edit-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+            <div>
+                <p class="edit-eyebrow">Gestión de reservas</p>
+                <h1>Extender reserva #@reservaOriginal.IdReserva</h1>
+                <p class="edit-description">
+                    Se creará una nueva reserva manteniendo el inmueble y el inquilino originales.
+                </p>
+            </div>
+        </header>
+
+        <div class="p-3">
+            <h5>Reserva original</h5>
+            <dl class="details-list">
+                <div class="details-row">
+                    <dt>Inmueble</dt>
+                    <dd>@reservaOriginal.Inmueble?.Direccion</dd>
+                </div>
+                <div class="details-row">
+                    <dt>Inquilino</dt>
+                    <dd>@reservaOriginal.Inquilino?.ToString()</dd>
+                </div>
+                <div class="details-row">
+                    <dt>Período</dt>
+                    <dd>@reservaOriginal.FechaInicio.ToString("dd/MM/yyyy") -
+                        @reservaOriginal.FechaFin.ToString("dd/MM/yyyy")</dd>
+                    </div>
+                    <div class="details-row">
+                        <dt>Monto diario original</dt>
+                        <dd>@reservaOriginal.MontoDiario.ToString("C", new System.Globalization.CultureInfo("es-AR"))</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <form asp-action="Extender" asp-route-id="@reservaOriginal.IdReserva" class="edit-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="edit-fields reservation-fields">
+                    <div class="form-group">
+                        <label asp-for="FechaInicio" class="control-label"></label>
+                        <input asp-for="FechaInicio" class="form-control" type="date"
+                               min="@reservaOriginal.FechaFin.AddDays(1).ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                        <small class="text-muted">Debe ser igual o posterior al
+                            @reservaOriginal.FechaFin.AddDays(1).ToString("dd/MM/yyyy").</small>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="FechaFin" class="control-label"></label>
+                            <input asp-for="FechaFin" class="form-control" type="date"
+                                   min="@reservaOriginal.FechaFin.AddDays(2).ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="FechaFin" class="text-danger"></span>
+                        </div>
+                        <div class="form-group reservation-wide-field">
+                            <label asp-for="MontoDiario" class="control-label"></label>
+                            <input asp-for="MontoDiario" class="form-control" />
+                            <span asp-validation-for="MontoDiario" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="edit-actions">
+                        <a asp-action="Ver" asp-route-id="@reservaOriginal.IdReserva" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-calendar-plus"></i> Crear extensión
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        @section Scripts {
+            @{
+                await Html.RenderPartialAsync("_ValidationScriptsPartial");
+            }
+        }

@@ -102,7 +102,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                     CargarListasDesplegables();
                     return View(reserva);
                 }
-                reserva.IdUsuarioCreacion = 1;
+                reserva.IdUsuarioCreacion = User.UsuarioId();
                 reserva.FechaCreacion = DateTime.Now;
 
                 repositorio.Alta(reserva);
@@ -130,6 +130,12 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 if (entidad == null)
                     return NotFound();
 
+                //Extenciones asociadas a la reserva
+                var extensiones = repositorio.ObtenerLista(1, int.MaxValue)
+                    .Where(r => r.IdReservaOrigen == id)
+                    .ToList();
+                ViewBag.Extensiones = extensiones;   
+
                 CargarRelacion(entidad);
                 CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
                 
@@ -137,6 +143,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 var inquilinoSeleccionado = repositorioInquilino.ObtenerPorId(entidad.IdInquilino);
                 ViewBag.InquilinoSeleccionado = inquilinoSeleccionado?.ToString();
                 ViewBag.InquilinoId = entidad.IdInquilino;
+                ViewBag.Pagos = repositorioPago.ObtenerPorReserva(id);
                 return View(entidad);
             }
             catch (Exception ex)
@@ -154,37 +161,69 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             try
             {
                 var reservaOriginal = repositorio.ObtenerPorId(id);
-                if (reservaOriginal == null)
-                    return NotFound();
+                if (reservaOriginal == null) return NotFound();
 
-                //Si la reserva ya empezo, no permitir modificar fechas
-                if (reservaOriginal.FechaInicio <= DateTime.Today)
+                // No permitir editar si tiene extensiones
+                var tieneExtensiones = repositorio.ObtenerLista(1, int.MaxValue)
+                    .Any(r => r.IdReservaOrigen == id);
+                if (tieneExtensiones)
                 {
-                    if (entidad.FechaInicio != reservaOriginal.FechaInicio || 
-                        entidad.FechaFin != reservaOriginal.FechaFin)
-                    {
-                        ModelState.AddModelError("", "No se pueden modificar las fechas de una reserva que ya comenzó.");
-                        CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
-                        return View(entidad);
-                    }
+                    TempData["Error"] = "No se puede editar esta reserva porque tiene extensiones asociadas. " +
+                                        "Eliminá primero las extensiones si querés modificarla.";
+                    return RedirectToAction(nameof(Ver), new { id });
+}
+
+                if (reservaOriginal.EstaTerminada)
+                {
+                    TempData["Error"] = "No se puede editar una reserva terminada.";
+                    return RedirectToAction(nameof(Ver), new { id });
                 }
-                else
+                if (reservaOriginal.FechaFin < DateTime.Today)
                 {
-                    // Si no empezo, validar fechas
+                    TempData["Error"] = "No se puede editar una reserva finalizada.";
+                    return RedirectToAction(nameof(Ver), new { id });
+                }
+
+                var yaComenzo = reservaOriginal.FechaInicio <= DateTime.Today;
+                var tienePagos = repositorioPago.ObtenerPorReserva(id).Any(p => !p.Anulado);
+
+                if (tienePagos)
+                {
+                    entidad.MontoDiario = reservaOriginal.MontoDiario;
+                    ModelState.Remove(nameof(entidad.MontoDiario));
+                }
+
+                // Si ya comenzo, ignorar cambios 
+                if (yaComenzo)
+                {
+                    entidad.FechaInicio = reservaOriginal.FechaInicio;
+                    entidad.FechaFin = reservaOriginal.FechaFin;
+                    entidad.IdInmueble = reservaOriginal.IdInmueble;
+                    entidad.IdInquilino = reservaOriginal.IdInquilino;
+                }
+                if (tienePagos)
+                {
+                    entidad.MontoDiario = reservaOriginal.MontoDiario;
+                }
+
+                // Validaciones
+                if (!yaComenzo)
+                {
                     if (entidad.FechaInicio < DateTime.Today)
-                    {
-                        ModelState.AddModelError("FechaInicio", "La fecha de inicio no puede ser anterior al día de hoy.");
-                    }
-                    if (entidad.FechaFin < entidad.FechaInicio)
-                    {
-                        ModelState.AddModelError("", "La fecha de fin debe ser posterior a la fecha de inicio.");
-                    }
-                    if (!ModelState.IsValid)
-                    {
-                        CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
-                        return View(entidad);
-                    }
+                        ModelState.AddModelError("FechaInicio", "La fecha de inicio no puede ser anterior a hoy.");
+                    if (entidad.FechaFin <= entidad.FechaInicio)
+                        ModelState.AddModelError("FechaFin", "La fecha de fin debe ser posterior a la de inicio.");
+                    if (!repositorio.EstaDisponible(entidad.IdInmueble, entidad.FechaInicio, entidad.FechaFin, id))
+                        ModelState.AddModelError("", "El inmueble no está disponible en las fechas seleccionadas.");
                 }
+
+                if (!ModelState.IsValid)
+                {
+                    CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
+                    ViewBag.Pagos = repositorioPago.ObtenerPorReserva(id);
+                    return View(entidad);
+                }
+
                 reservaOriginal.FechaInicio = entidad.FechaInicio;
                 reservaOriginal.FechaFin = entidad.FechaFin;
                 reservaOriginal.MontoDiario = entidad.MontoDiario;
@@ -201,6 +240,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 logger.LogError(ex, "Error en Edit POST");
                 ModelState.AddModelError("", ex.Message);
                 CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
+                ViewBag.Pagos = repositorioPago.ObtenerPorReserva(id);
                 return View(entidad);
             }
         }
@@ -263,6 +303,16 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                              !tienePagoMulta;
                 ViewBag.TienePagoMulta = tienePagoMulta;
                 ViewBag.PuedeTerminar = puedeTerminar;
+
+                ViewBag.Extensiones = repositorio.ObtenerLista(1, int.MaxValue)
+                .Where(r => r.IdReservaOrigen == id)
+                .ToList();
+
+                
+                if (entidad.IdReservaOrigen != null)
+                {
+                    ViewBag.ReservaOrigen = repositorio.ObtenerPorId(entidad.IdReservaOrigen.Value);
+                }
                 return View(entidad);
             }
             catch (Exception ex)
@@ -300,13 +350,13 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                         FechaPago = DateTime.Today,
                         Importe = montoMulta,
                         IdReserva = reserva.IdReserva,
-                        IdUsuarioCreacion = 1 // Usuario por defecto
+                        IdUsuarioCreacion = User.UsuarioId() 
                     };
                     repositorioPago.Alta(pago);
                 }
 
                 // Actualizar reserva
-                repositorio.TerminarAnticipadamente(id, fechaTerminacion, 1); // Usuario por defecto
+                repositorio.TerminarAnticipadamente(id, fechaTerminacion, User.UsuarioId()); 
 
                 TempData["Mensaje"] = $"Reserva terminada anticipadamente. Multa: {montoMulta:C}";
                 return RedirectToAction(nameof(Index));
@@ -319,8 +369,8 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
         }
 
-        // GET: Reserva/Extender
-        public ActionResult Extender(int id, int dias, decimal nuevoPrecioDiario)
+        // GET: Reserva/Extender/5
+        public ActionResult Extender(int id)
         {
             try
             {
@@ -328,30 +378,105 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 if (reservaOriginal == null)
                     return NotFound();
 
+                if (reservaOriginal.EstaTerminada)
+                {
+                    TempData["Error"] = "No se puede extender una reserva que ya fue terminada.";
+                    return RedirectToAction(nameof(Ver), new { id });
+                }
+
+                CargarRelacion(reservaOriginal);
+                ViewBag.ReservaOriginal = reservaOriginal;
+
                 var nuevaReserva = new Reserva
                 {
                     FechaInicio = reservaOriginal.FechaFin.AddDays(1),
-                    FechaFin = reservaOriginal.FechaFin.AddDays(dias),
-                    MontoDiario = nuevoPrecioDiario,
+                    FechaFin = reservaOriginal.FechaFin.AddDays(2),
+                    MontoDiario = reservaOriginal.Inmueble?.PrecioPorDia ?? reservaOriginal.MontoDiario
+                };
+
+                return View(nuevaReserva);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en Extender GET");
+                throw;
+            }
+        }
+
+        // POST: Reserva/Extender/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Extender(int id, Reserva entidad)
+        {
+            try
+            {
+                var reservaOriginal = repositorio.ObtenerPorId(id);
+                if (reservaOriginal == null)
+                    return NotFound();
+
+                if (reservaOriginal.EstaTerminada)
+                {
+                    TempData["Error"] = "No se puede extender una reserva terminada.";
+                    return RedirectToAction(nameof(Ver), new { id });
+                }
+
+                // Validaciones
+                if (entidad.FechaInicio < DateTime.Today)
+                    ModelState.AddModelError("FechaInicio", "La fecha de inicio no puede ser anterior a hoy.");
+                if (entidad.FechaFin <= entidad.FechaInicio)
+                    ModelState.AddModelError("FechaFin", "La fecha de fin debe ser posterior a la de inicio.");
+                if (entidad.MontoDiario <= 0)
+                    ModelState.AddModelError("MontoDiario", "El monto debe ser mayor a 0.");
+
+                var minimoInicio = reservaOriginal.FechaFin.AddDays(1);
+                if (entidad.FechaInicio < minimoInicio)
+                    ModelState.AddModelError("FechaInicio",
+                        $"La extensión debe comenzar a partir del {minimoInicio:dd/MM/yyyy}.");
+
+                if (!ModelState.IsValid)
+                {
+                    CargarRelacion(reservaOriginal);
+                    ViewBag.ReservaOriginal = reservaOriginal;
+                    return View(entidad);
+                }
+
+                // Verificar disponibilidad
+                if (!repositorio.EstaDisponible(reservaOriginal.IdInmueble, entidad.FechaInicio, entidad.FechaFin))
+                {
+                    ModelState.AddModelError("", "El inmueble no está disponible en las fechas seleccionadas.");
+                    CargarRelacion(reservaOriginal);
+                    ViewBag.ReservaOriginal = reservaOriginal;
+                    return View(entidad);
+                }
+
+                var nuevaReserva = new Reserva
+                {
+                    FechaInicio = entidad.FechaInicio,
+                    FechaFin = entidad.FechaFin,
+                    MontoDiario = entidad.MontoDiario,
                     IdInmueble = reservaOriginal.IdInmueble,
                     IdInquilino = reservaOriginal.IdInquilino,
-                    IdUsuarioCreacion = 1 // Usuario autenticado
+                    IdUsuarioCreacion = User.UsuarioId(),
+                    IdReservaOrigen = reservaOriginal.IdReserva,
+                    FechaCreacion = DateTime.Now
                 };
 
                 repositorio.Alta(nuevaReserva);
-                TempData["Mensaje"] = $"Reserva extendida. Nueva reserva #{nuevaReserva.IdReserva} creada.";
-                return RedirectToAction(nameof(Index));
+                RegistrarPagoInicial(nuevaReserva);
+
+                TempData["Mensaje"] = $"Reserva extendida correctamente. Nueva reserva #{nuevaReserva.IdReserva}.";
+                return RedirectToAction(nameof(Ver), new { id = nuevaReserva.IdReserva });
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al extender reserva");
-                TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Ver), new { id });
+                ModelState.AddModelError("", ex.Message);
+                var reserva = repositorio.ObtenerPorId(id);
+                CargarRelacion(reserva);
+                ViewBag.ReservaOriginal = reserva;
+                return View(new Reserva());
             }
         }
-
-        // POST: Reserva/Extender
-        //Validar disponibilidad del inmueble para las fechas nuevas.
 
         // Metodos auxiliares.
         private void CargarListasDesplegables(int? inmuebleSeleccionado = null, int? inquilinoSeleccionado = null)

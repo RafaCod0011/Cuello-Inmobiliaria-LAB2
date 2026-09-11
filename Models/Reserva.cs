@@ -36,6 +36,9 @@ namespace Cuello_Inmobiliaria_LAB2.Models
         [DataType(DataType.Date)]
         public DateTime? FechaTerminacionAnticipada { get; set; }
 
+        //Hace referencia a idReserva de la reserva que se extendió (para hacer un seguimiento de la reserva original)
+        public int? IdReservaOrigen { get; set; }
+
         // Claves
         [Required]
         [Display(Name = "Inmueble")]
