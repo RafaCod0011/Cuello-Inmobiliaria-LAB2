@@ -14,9 +14,6 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Alta(Pago p)
         {
-            // Usuario por defecto hasta hacer la autenticacion.
-            if (p.IdUsuarioCreacion <= 0)
-                p.IdUsuarioCreacion = 1;
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
@@ -46,7 +43,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public int Baja(int id)
         {
-            return EjecutarAnulacion(id, 0);
+            throw new NotImplementedException("Los pagos no se eliminan, se anulan.");
         }
 
         public int Modificacion(Pago p)
@@ -54,6 +51,7 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
+                // Modificar el concepto de pago
                 string sql = "UPDATE Pago SET Concepto = @concepto WHERE IdPago = @id";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -73,9 +71,13 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = $@"
-                    SELECT IdPago, Concepto, FechaPago, Importe, Anulado, FechaCreacion, 
-                           FechaAnulacion, IdReserva, IdUsuarioCreacion, IdUsuarioAnulacion
-                    FROM Pago
+                    SELECT p.IdPago, p.Concepto, p.FechaPago, p.Importe, p.Anulado, p.FechaCreacion, 
+                           p.FechaAnulacion, p.IdReserva, p.IdUsuarioCreacion, p.IdUsuarioAnulacion,
+                           u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                           u2.Nombre AS NombreAnulador, u2.Apellido AS ApellidoAnulador
+                    FROM Pago p
+                    LEFT JOIN Usuario u1 ON p.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON p.IdUsuarioAnulacion = u2.IdUsuario
                     LIMIT {tamPagina} OFFSET {(pagina - 1) * tamPagina}
                 ";
                 using (var command = new MySqlCommand(sql, connection))
@@ -114,10 +116,14 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"
-                    SELECT IdPago, Concepto, FechaPago, Importe, Anulado, FechaCreacion,
-                           FechaAnulacion, IdReserva, IdUsuarioCreacion, IdUsuarioAnulacion
-                    FROM Pago
-                    WHERE IdPago = @id
+                    SELECT p.IdPago, p.Concepto, p.FechaPago, p.Importe, p.Anulado, p.FechaCreacion,
+                           p.FechaAnulacion, p.IdReserva, p.IdUsuarioCreacion, p.IdUsuarioAnulacion,
+                           u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                           u2.Nombre AS NombreAnulador, u2.Apellido AS ApellidoAnulador
+                    FROM Pago p
+                    LEFT JOIN Usuario u1 ON p.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON p.IdUsuarioAnulacion = u2.IdUsuario
+                    WHERE p.IdPago = @id
                 ";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -138,11 +144,15 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"
-                    SELECT IdPago, Concepto, FechaPago, Importe, Anulado, FechaCreacion,
-                           FechaAnulacion, IdReserva, IdUsuarioCreacion, IdUsuarioAnulacion
-                    FROM Pago
-                    WHERE IdReserva = @idReserva
-                    ORDER BY FechaPago DESC
+                    SELECT p.IdPago, p.Concepto, p.FechaPago, p.Importe, p.Anulado, p.FechaCreacion,
+                           p.FechaAnulacion, p.IdReserva, p.IdUsuarioCreacion, p.IdUsuarioAnulacion,
+                           u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                           u2.Nombre AS NombreAnulador, u2.Apellido AS ApellidoAnulador
+                    FROM Pago p
+                    LEFT JOIN Usuario u1 ON p.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON p.IdUsuarioAnulacion = u2.IdUsuario
+                    WHERE p.IdReserva = @idReserva
+                    ORDER BY p.FechaPago DESC
                 ";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -159,21 +169,13 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         public void Anular(int idPago, int idUsuarioAnulacion)
         {
-            EjecutarAnulacion(idPago, idUsuarioAnulacion);
-        }
-
-        private int EjecutarAnulacion(int idPago, int idUsuarioAnulacion)
-        {
-            // Usuario por defecto hasta hacer la autenticacion.
-            if (idUsuarioAnulacion <= 0)
-            idUsuarioAnulacion = 1; // Usuario por defecto
             int res = -1;
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"
                     UPDATE Pago 
                     SET Anulado = true, FechaAnulacion = @fechaAnulacion, IdUsuarioAnulacion = @idUsuarioAnulacion
-                    WHERE IdPago = @idPago
+                    WHERE IdPago = @idPago AND Anulado = false
                 ";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -185,24 +187,49 @@ namespace Cuello_Inmobiliaria_LAB2.Models
                     connection.Close();
                 }
             }
-            return res;
+            if (res <= 0)
+                throw new Exception("El pago no existe o ya estaba anulado.");
         }
 
         private Pago MapPago(MySqlDataReader reader)
         {
-            return new Pago
+            var pago = new Pago
             {
-                IdPago = reader.GetInt32(nameof(Pago.IdPago)),
-                Concepto = reader.GetString(nameof(Pago.Concepto)),
-                FechaPago = reader.GetDateTime(nameof(Pago.FechaPago)),
-                Importe = reader.GetDecimal(nameof(Pago.Importe)),
-                Anulado = reader.GetBoolean(nameof(Pago.Anulado)),
-                FechaCreacion = reader.GetDateTime(nameof(Pago.FechaCreacion)),
-                FechaAnulacion = reader.IsDBNull(reader.GetOrdinal(nameof(Pago.FechaAnulacion))) ? (DateTime?)null : reader.GetDateTime(nameof(Pago.FechaAnulacion)),
-                IdReserva = reader.GetInt32(nameof(Pago.IdReserva)),
-                IdUsuarioCreacion = reader.GetInt32(nameof(Pago.IdUsuarioCreacion)),
-                IdUsuarioAnulacion = reader.IsDBNull(reader.GetOrdinal(nameof(Pago.IdUsuarioAnulacion))) ? (int?)null : reader.GetInt32(nameof(Pago.IdUsuarioAnulacion))
+                IdPago = reader.GetInt32("IdPago"),
+                Concepto = reader.GetString("Concepto"),
+                FechaPago = reader.GetDateTime("FechaPago"),
+                Importe = reader.GetDecimal("Importe"),
+                Anulado = reader.GetBoolean("Anulado"),
+                FechaCreacion = reader.GetDateTime("FechaCreacion"),
+                FechaAnulacion = reader.IsDBNull(reader.GetOrdinal("FechaAnulacion")) ? (DateTime?)null : reader.GetDateTime("FechaAnulacion"),
+                IdReserva = reader.GetInt32("IdReserva"),
+                IdUsuarioCreacion = reader.GetInt32("IdUsuarioCreacion"),
+                IdUsuarioAnulacion = reader.IsDBNull(reader.GetOrdinal("IdUsuarioAnulacion")) ? (int?)null : reader.GetInt32("IdUsuarioAnulacion")
             };
+
+            // Usuario que creó el pago
+            if (!reader.IsDBNull(reader.GetOrdinal("NombreCreador")))
+            {
+                pago.UsuarioCreacion = new Usuario
+                {
+                    Id = pago.IdUsuarioCreacion,
+                    Nombre = reader.GetString("NombreCreador"),
+                    Apellido = reader.GetString("ApellidoCreador")
+                };
+            }
+
+            // Usuario que anuló el pago (si aplica)
+            if (pago.IdUsuarioAnulacion.HasValue && !reader.IsDBNull(reader.GetOrdinal("NombreAnulador")))
+            {
+                pago.UsuarioAnulacion = new Usuario
+                {
+                    Id = pago.IdUsuarioAnulacion.Value,
+                    Nombre = reader.GetString("NombreAnulador"),
+                    Apellido = reader.GetString("ApellidoAnulador")
+                };
+            }
+
+            return pago;
         }
     }
 }

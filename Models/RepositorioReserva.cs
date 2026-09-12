@@ -140,9 +140,14 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = $@"
-                    SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion, 
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
-                    FROM Reserva
+                    SELECT r.IdReserva, r.FechaInicio, r.FechaFin, r.MontoDiario, r.FechaCreacion, 
+                        r.FechaTerminacionAnticipada, r.IdInmueble, r.IdInquilino, 
+                        r.IdUsuarioCreacion, r.IdUsuarioTerminacion, r.IdReservaOrigen,
+                        u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                        u2.Nombre AS NombreTerminador, u2.Apellido AS ApellidoTerminador
+                    FROM Reserva r
+                    LEFT JOIN Usuario u1 ON r.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON r.IdUsuarioTerminacion = u2.IdUsuario
                     LIMIT {tamPagina} OFFSET {(pagina - 1) * tamPagina}
                 ";
                 using (var command = new MySqlCommand(sql, connection))
@@ -181,10 +186,15 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             using (var connection = new MySqlConnection(connectionString))
             {
                 string sql = @"
-                    SELECT IdReserva, FechaInicio, FechaFin, MontoDiario, FechaCreacion,
-                           FechaTerminacionAnticipada, IdInmueble, IdInquilino, IdUsuarioCreacion, IdUsuarioTerminacion, IdReservaOrigen
-                    FROM Reserva
-                    WHERE IdReserva = @id
+                    SELECT r.IdReserva, r.FechaInicio, r.FechaFin, r.MontoDiario, r.FechaCreacion,
+                        r.FechaTerminacionAnticipada, r.IdInmueble, r.IdInquilino, 
+                        r.IdUsuarioCreacion, r.IdUsuarioTerminacion, r.IdReservaOrigen,
+                        u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                        u2.Nombre AS NombreTerminador, u2.Apellido AS ApellidoTerminador
+                    FROM Reserva r
+                    LEFT JOIN Usuario u1 ON r.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON r.IdUsuarioTerminacion = u2.IdUsuario
+                    WHERE r.IdReserva = @id
                 ";
                 using (var command = new MySqlCommand(sql, connection))
                 {
@@ -365,20 +375,55 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 
         private Reserva MapReserva(MySqlDataReader reader)
         {
-            return new Reserva
+            var r = new Reserva
             {
-                IdReserva = reader.GetInt32(nameof(Reserva.IdReserva)),
-                FechaInicio = reader.GetDateTime(nameof(Reserva.FechaInicio)),
-                FechaFin = reader.GetDateTime(nameof(Reserva.FechaFin)),
-                MontoDiario = reader.GetDecimal(nameof(Reserva.MontoDiario)),
-                FechaCreacion = reader.GetDateTime(nameof(Reserva.FechaCreacion)),
-                FechaTerminacionAnticipada = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.FechaTerminacionAnticipada))) ? (DateTime?)null : reader.GetDateTime(nameof(Reserva.FechaTerminacionAnticipada)),
-                IdInmueble = reader.GetInt32(nameof(Reserva.IdInmueble)),
-                IdInquilino = reader.GetInt32(nameof(Reserva.IdInquilino)),
-                IdUsuarioCreacion = reader.GetInt32(nameof(Reserva.IdUsuarioCreacion)),
-                IdUsuarioTerminacion = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.IdUsuarioTerminacion))) ? (int?)null : reader.GetInt32(nameof(Reserva.IdUsuarioTerminacion)),
-                IdReservaOrigen = reader.IsDBNull(reader.GetOrdinal("IdReservaOrigen")) ? (int?)null : reader.GetInt32("IdReservaOrigen")
+                IdReserva = reader.GetInt32("IdReserva"),
+                FechaInicio = reader.GetDateTime("FechaInicio"),
+                FechaFin = reader.GetDateTime("FechaFin"),
+                MontoDiario = reader.GetDecimal("MontoDiario"),
+                FechaCreacion = reader.GetDateTime("FechaCreacion"),
+                FechaTerminacionAnticipada = reader.IsDBNull(reader.GetOrdinal("FechaTerminacionAnticipada"))
+                    ? (DateTime?)null
+                    : reader.GetDateTime("FechaTerminacionAnticipada"),
+                IdInmueble = reader.GetInt32("IdInmueble"),
+                IdInquilino = reader.GetInt32("IdInquilino"),
+                IdUsuarioCreacion = reader.GetInt32("IdUsuarioCreacion"),
+                IdUsuarioTerminacion = reader.IsDBNull(reader.GetOrdinal("IdUsuarioTerminacion"))
+                    ? (int?)null
+                    : reader.GetInt32("IdUsuarioTerminacion")
             };
+
+            // Cargar IdReservaOrigen si existe en el SELECT
+            if (reader.GetOrdinal("IdReservaOrigen") >= 0 && !reader.IsDBNull(reader.GetOrdinal("IdReservaOrigen")))
+            {
+                r.IdReservaOrigen = reader.GetInt32("IdReservaOrigen");
+            }
+
+            // Cargar el usuario que creó la reserva
+            int idxNombreCreador = reader.GetOrdinal("NombreCreador");
+            if (!reader.IsDBNull(idxNombreCreador))
+            {
+                r.UsuarioCreacion = new Usuario
+                {
+                    Id = r.IdUsuarioCreacion,
+                    Nombre = reader.GetString("NombreCreador"),
+                    Apellido = reader.GetString("ApellidoCreador")
+                };
+            }
+
+            // Cargar el usuario que terminó la reserva (si existe)
+            int idxNombreTerminador = reader.GetOrdinal("NombreTerminador");
+            if (r.IdUsuarioTerminacion.HasValue && !reader.IsDBNull(idxNombreTerminador))
+            {
+                r.UsuarioTerminacion = new Usuario
+                {
+                    Id = r.IdUsuarioTerminacion.Value,
+                    Nombre = reader.GetString("NombreTerminador"),
+                    Apellido = reader.GetString("ApellidoTerminador")
+                };
+            }
+
+            return r;
         }
     }
 }

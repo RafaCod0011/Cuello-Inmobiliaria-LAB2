@@ -3,14 +3,17 @@
 @{
     ViewData["Title"] = $"Detalles de Reserva #{Model.IdReserva}";
     var extensiones = (IList<Cuello_Inmobiliaria_LAB2.Models.Reserva>)ViewBag.Extensiones
-                        ?? new List<Cuello_Inmobiliaria_LAB2.Models.Reserva>();
+        ?? new List<Cuello_Inmobiliaria_LAB2.Models.Reserva>();
     var reservaOrigen = (Cuello_Inmobiliaria_LAB2.Models.Reserva)ViewBag.ReservaOrigen;
+    var esAdmin = User.IsInRole("Administrador");
 }
 
 <section class="details-page">
     <div class="details-card reservation-details-card">
         <header class="edit-card-header">
-            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="edit-icon" aria-hidden="true">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
             <div>
                 <p class="edit-eyebrow">Gestion de reservas</p>
                 <h1>Detalles de la reserva</h1>
@@ -88,7 +91,32 @@
                     </dd>
                 </div>
             </dl>
+            @if (esAdmin)
+            {
+                <h4 class="mt-4">Auditoría</h4>
+                <dl class="details-list">
+                    <div class="details-row">
+                        <dt>Creada por</dt>
+                        <dd>
+                            @(Model.UsuarioCreacion?.ToString() ?? "N/A")
+                            <br />
+                            <small class="text-muted">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</small>
+                        </dd>
+                    </div>
 
+                    @if (Model.IdUsuarioTerminacion != null)
+                    {
+                        <div class="details-row">
+                            <dt>Terminada por</dt>
+                            <dd>
+                                @(Model.UsuarioTerminacion?.ToString() ?? "N/A")
+                                <br />
+                                <small class="text-muted">@Model.FechaTerminacionAnticipada?.ToString("dd/MM/yyyy")</small>
+                            </dd>
+                        </div>
+                    }
+                </dl>
+            }
             @if (extensiones.Any())
             {
                 <h4 class="mt-4">Extensiones</h4>
@@ -143,10 +171,20 @@
                 </div>
             }
 
-            <h4 class="mt-4">Pagos asociados</h4>
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <h4 class="mb-0">Pagos asociados</h4>
+
+                @if (!Model.EstaTerminada)
+                {
+                    <button class="btn btn-success btn-sm" onclick="mostrarModalNuevoPago()">
+                        <i class="fa-solid fa-plus me-1"></i> Registrar pago
+                    </button>
+                }
+            </div>
+
             @if (Model.Pagos != null && Model.Pagos.Any())
             {
-                <div class="index-table-wrapper">
+                <div class="index-table-wrapper mt-2">
                     <table class="table index-table">
                         <thead>
                             <tr>
@@ -154,6 +192,12 @@
                                 <th>Fecha</th>
                                 <th>Importe</th>
                                 <th>Estado</th>
+                                @if (esAdmin)
+                                {
+                                    <th>Creado por</th>
+                                    <th>Anulado por</th>
+                                }
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -163,7 +207,52 @@
                                     <td>@pago.Concepto</td>
                                     <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
                                     <td>@pago.Importe.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
-                                    <td>@(pago.Anulado ? "Anulado" : "Activo")</td>
+                                    <td>
+                                        @if (pago.Anulado)
+                                        {
+                                            <span class="badge bg-danger">Anulado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                    </td>
+
+                                    @if (esAdmin)
+                                    {
+                                        <td>
+                                            @(pago.UsuarioCreacion?.ToString() ?? "N/A")
+                                            <br />
+                                            <small class="text-muted">@pago.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </td>
+                                        <td>
+                                            @if (pago.Anulado && pago.UsuarioAnulacion != null)
+                                            {
+                                                @pago.UsuarioAnulacion.ToString()
+                                                <br />
+                                                <small class="text-muted">@pago.FechaAnulacion?.ToString("dd/MM/yyyy HH:mm")</small>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </td>
+                                    }
+
+                                    <td>
+                                        @if (!pago.Anulado)
+                                        {
+                                            <button class="btn btn-outline-primary btn-sm" title="Editar concepto"
+                                                    data-id="@pago.IdPago" data-concepto="@pago.Concepto"
+                                                    onclick="mostrarModalEditarPago(this)">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" title="Anular pago"
+                                                    onclick="anularPago(@pago.IdPago)">
+                                                <i class="fa-solid fa-ban"></i>
+                                            </button>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -172,7 +261,7 @@
             }
             else
             {
-                <p>No hay pagos registrados.</p>
+                <p class="mt-2">No hay pagos registrados.</p>
             }
 
             <div class="details-actions">
@@ -182,12 +271,14 @@
                 <a asp-action="Edit" asp-route-id="@Model.IdReserva" class="btn btn-primary">
                     <i class="fa-solid fa-pen me-2" aria-hidden="true"></i><span>Editar</span>
                 </a>
+
                 @if (ViewBag.PuedeTerminar == true)
                 {
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalTerminar">
                         <i class="fa-solid fa-xmark me-2" aria-hidden="true"></i><span>Terminar anticipadamente</span>
                     </button>
                 }
+
                 @if (!Model.EstaTerminada && (Model.EstaVigente || Model.EsProxima))
                 {
                     <a asp-action="Extender" asp-route-id="@Model.IdReserva" class="btn btn-success">
@@ -196,7 +287,7 @@
                 }
             </div>
 
-            <!-- Modal para terminar anticipadamente -->
+            <!-- Terminar anticipadamente -->
             <div class="modal fade" id="modalTerminar" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -223,6 +314,183 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Nuevo pago -->
+            <div class="modal fade" id="modalNuevoPago" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Registrar nuevo pago</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label>Concepto</label>
+                                <input type="text" id="nuevoPagoConcepto" class="form-control" required />
+                            </div>
+                            <div class="form-group mb-3">
+                                <label>Importe</label>
+                                <input type="number" step="0.01" id="nuevoPagoImporte" class="form-control" required />
+                            </div>
+                            <div class="form-group mb-3">
+                                <label>Fecha de pago</label>
+                                <input type="date" id="nuevoPagoFecha" class="form-control"
+                                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div id="errorNuevoPago" class="alert alert-danger d-none"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-success" onclick="guardarNuevoPago()">
+                                <i class="fa-solid fa-save me-1"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concepto de pago -->
+            <div class="modal fade" id="modalEditarPago" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Editar concepto del pago</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="editarPagoId" />
+                            <div class="form-group mb-3">
+                                <label>Concepto</label>
+                                <input type="text" id="editarPagoConcepto" class="form-control" required />
+                            </div>
+                            <div id="errorEditarPago" class="alert alert-danger d-none"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-success" onclick="guardarEditarPago()">
+                                <i class="fa-solid fa-save me-1"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        const urlCrearPago = '@Url.Action("Crear", "Pago")';
+        const urlEditarPago = '@Url.Action("EditarConcepto", "Pago")';
+        const urlAnularPago = '@Url.Action("Anular", "Pago")';
+        const idReserva = @Model.IdReserva;
+
+        function mostrarModalNuevoPago() {
+            document.getElementById('nuevoPagoConcepto').value = '';
+            document.getElementById('nuevoPagoImporte').value = '';
+            document.getElementById('nuevoPagoFecha').value = '@DateTime.Today.ToString("yyyy-MM-dd")';
+            document.getElementById('errorNuevoPago').classList.add('d-none');
+            $('#modalNuevoPago').modal('show');
+        }
+
+        function guardarNuevoPago() {
+            const concepto = document.getElementById('nuevoPagoConcepto').value.trim();
+            const importe = parseFloat(document.getElementById('nuevoPagoImporte').value);
+            const fechaPago = document.getElementById('nuevoPagoFecha').value;
+            const errorDiv = document.getElementById('errorNuevoPago');
+
+            errorDiv.classList.add('d-none');
+
+            if (!concepto || isNaN(importe) || importe <= 0 || !fechaPago) {
+                errorDiv.textContent = 'Complete todos los campos correctamente.';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: urlCrearPago,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Concepto: concepto,
+                    Importe: importe,
+                    FechaPago: fechaPago,
+                    IdReserva: idReserva
+                }),
+                success: (data) => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        errorDiv.textContent = data.error || 'Error al crear el pago';
+                        errorDiv.classList.remove('d-none');
+                    }
+                },
+                error: (xhr) => {
+                    errorDiv.textContent = xhr.responseJSON?.error || 'Error al crear el pago';
+                    errorDiv.classList.remove('d-none');
+                }
+            });
+        }
+
+        function mostrarModalEditarPago(btn) {
+            const idPago = parseInt(btn.dataset.id);
+            const conceptoActual = btn.dataset.concepto;
+
+            document.getElementById('editarPagoId').value = idPago;
+            document.getElementById('editarPagoConcepto').value = conceptoActual;
+            document.getElementById('errorEditarPago').classList.add('d-none');
+
+            $('#modalEditarPago').modal('show');
+        }
+
+        function guardarEditarPago() {
+            const idPago = parseInt(document.getElementById('editarPagoId').value);
+            const concepto = document.getElementById('editarPagoConcepto').value.trim();
+            const errorDiv = document.getElementById('errorEditarPago');
+
+            errorDiv.classList.add('d-none');
+
+            if (!concepto) {
+                errorDiv.textContent = 'El concepto es obligatorio.';
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+
+            $.ajax({
+                url: urlEditarPago,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ IdPago: idPago, Concepto: concepto }),
+                success: (data) => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        errorDiv.textContent = data.error || 'Error al editar el concepto';
+                        errorDiv.classList.remove('d-none');
+                    }
+                },
+                error: (xhr) => {
+                    errorDiv.textContent = xhr.responseJSON?.error || 'Error al editar el concepto';
+                    errorDiv.classList.remove('d-none');
+                }
+            });
+        }
+
+        function anularPago(idPago) {
+            if (!confirm('¿Está seguro de anular este pago?')) return;
+
+            $.ajax({
+                url: urlAnularPago + '/' + idPago,
+                method: 'POST',
+                success: (data) => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                },
+                error: (xhr) => {
+                    alert(xhr.responseJSON?.error || 'Error al anular el pago');
+                }
+            });
+        }
+    </script>
+}

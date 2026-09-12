@@ -44,5 +44,10 @@ namespace Cuello_Inmobiliaria_LAB2.Models
 			}
 			return roles;
 		}
+
+		public override string ToString()
+		{
+			return $"{Nombre} {Apellido}";
+		}
 	}
 }
