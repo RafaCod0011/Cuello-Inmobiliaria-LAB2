@@ -44,23 +44,19 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         // GET: Inquilino/Create
-        public ActionResult Create()
+        public ActionResult Create(string? dni = null, string? returnUrl = null)
         {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error en Create GET");
-                throw;
-            }
+            ViewBag.ReturnUrl = returnUrl;
+            var model = new Inquilino();
+            if (!string.IsNullOrEmpty(dni))
+                model.Dni = dni;
+            return View(model);
         }
 
         // POST: Inquilino/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Inquilino inquilino)
+        public ActionResult Create(Inquilino inquilino, string? returnUrl = null)
         {
             try
             {
@@ -68,15 +64,22 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 {
                     repositorio.Alta(inquilino);
                     TempData["Mensaje"] = "Inquilino creado correctamente";
+
+                    // Si viene del flujo guiado, volver al paso 2
+                    if (!string.IsNullOrEmpty(returnUrl))
+                        return Redirect($"{returnUrl}?id={inquilino.IdInquilino}");
+
                     return RedirectToAction(nameof(Index));
                 }
-                else
-                    return View(inquilino);
+
+                ViewBag.ReturnUrl = returnUrl;
+                return View(inquilino);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Create POST");
                 ModelState.AddModelError("", ex.Message);
+                ViewBag.ReturnUrl = returnUrl;
                 return View(inquilino);
             }
         }

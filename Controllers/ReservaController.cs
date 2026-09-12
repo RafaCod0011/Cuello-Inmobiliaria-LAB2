@@ -14,6 +14,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
     {
         private readonly IRepositorioReserva repositorio;
         private readonly IRepositorioInmueble repositorioInmueble;
+        private readonly IRepositorioTipoInmueble repositorioTipo;
         private readonly IRepositorioInquilino repositorioInquilino;
         private readonly IRepositorioPago repositorioPago;
         private readonly IConfiguration config;
@@ -22,6 +23,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         public ReservaController(
             IRepositorioReserva repositorio,
             IRepositorioInmueble repositorioInmueble,
+            IRepositorioTipoInmueble repositorioTipo,
             IRepositorioInquilino repositorioInquilino,
             IRepositorioPago repositorioPago,
             IConfiguration config,
@@ -29,6 +31,7 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         {
             this.repositorio = repositorio;
             this.repositorioInmueble = repositorioInmueble;
+            this.repositorioTipo = repositorioTipo;
             this.repositorioInquilino = repositorioInquilino;
             this.repositorioPago = repositorioPago;
             this.config = config;
@@ -64,11 +67,28 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             try
             {
                 CargarListasDesplegables();
-                return View(new Reserva
+
+                var model = new Reserva
                 {
-                    FechaInicio = DateTime.Today,
-                    FechaFin = DateTime.Today.AddDays(1)
-                });
+                    FechaInicio = (DateTime?)TempData["FechaInicio"] ?? DateTime.Today,
+                    FechaFin = (DateTime?)TempData["FechaFin"] ?? DateTime.Today.AddDays(1)
+                };
+
+                // Prellenar inmueble
+                if (TempData["IdInmueble"] != null)
+                    model.IdInmueble = (int)TempData["IdInmueble"];
+
+                // Prellenar inquilino (y datos para el Select2)
+                if (TempData["IdInquilino"] != null)
+                {
+                    model.IdInquilino = (int)TempData["IdInquilino"];
+
+                    var inquilino = repositorioInquilino.ObtenerPorId(model.IdInquilino);
+                    ViewBag.InquilinoId = model.IdInquilino;
+                    ViewBag.InquilinoSeleccionado = inquilino?.ToString();
+                }
+
+                return View(model);
             }
             catch (Exception ex)
             {
@@ -476,6 +496,119 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 ViewBag.ReservaOriginal = reserva;
                 return View(new Reserva());
             }
+        }
+
+        // GET: Reserva/BuscarInquilino
+        [HttpGet]
+        public IActionResult BuscarInquilino()
+        {
+            return View();
+        }
+
+        // POST: Reserva/BuscarInquilino
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult BuscarInquilino(string dni)
+        {
+            if (string.IsNullOrWhiteSpace(dni))
+            {
+                ViewBag.Error = "Ingresá un DNI.";
+                return View();
+            }
+
+            var inquilino = repositorioInquilino.ObtenerPorDni(dni);
+            if (inquilino == null)
+            {
+                // Si no existe lleva a crear inquilino con DNI prellenado y returnUrl
+                TempData["Mensaje"] = "El DNI no está registrado. Completá los datos del inquilino.";
+                return RedirectToAction("Create", "Inquilino", new
+                {
+                    dni = dni,
+                    returnUrl = Url.Action("ContinuarDesdeInquilino", "Reserva")
+                });
+            }
+
+            // Si existe, se guarda en TempData y redirige a buscar inmuebles
+            TempData["IdInquilino"] = inquilino.IdInquilino;
+            TempData["NombreInquilino"] = inquilino.ToString();
+            return RedirectToAction(nameof(BuscarInmuebles));
+        }
+        
+        // GET: Reserva/ContinuarDesdeInquilino/5
+        [HttpGet]
+        public IActionResult ContinuarDesdeInquilino(int id)
+        {
+            var inquilino = repositorioInquilino.ObtenerPorId(id);
+            if (inquilino == null)
+                return RedirectToAction(nameof(BuscarInquilino));
+
+            TempData["IdInquilino"] = inquilino.IdInquilino;
+            TempData["NombreInquilino"] = inquilino.ToString();
+            TempData["Mensaje"] = "Inquilino creado. Ahora buscá el inmueble.";
+            return RedirectToAction(nameof(BuscarInmuebles));
+        }
+
+        // GET: Reserva/BuscarInmuebles
+        [HttpGet]
+        public IActionResult BuscarInmuebles(DateTime? fechaInicio, DateTime? fechaFin, int? idTipo, int? cupoMin, int pagina = 1)
+        {
+            if (TempData["IdInquilino"] == null)
+                return RedirectToAction(nameof(BuscarInquilino));
+
+            ViewBag.IdInquilino = TempData["IdInquilino"];
+            ViewBag.NombreInquilino = TempData["NombreInquilino"];
+            ViewBag.Mensaje = TempData["Mensaje"];
+            TempData.Keep();
+            ViewBag.Tipos = repositorioTipo.ObtenerLista(1, int.MaxValue);
+
+            // Si no hay fechas, solo mostrar el formulario
+            if (!fechaInicio.HasValue || !fechaFin.HasValue)
+                return View();
+
+            if (fechaInicio.Value < DateTime.Today)
+                ModelState.AddModelError("fechaInicio", "La fecha de inicio no puede ser anterior a hoy.");
+            if (fechaFin.Value <= fechaInicio.Value)
+                ModelState.AddModelError("fechaFin", "La fecha de fin debe ser posterior a la de inicio.");
+
+            if (!ModelState.IsValid)
+                return View();
+
+            var tamaño = 5;
+            pagina = Math.Max(pagina, 1);
+
+            var total = repositorioInmueble.ContarDisponibles(fechaInicio.Value, fechaFin.Value, idTipo, cupoMin);
+            var resultados = repositorioInmueble.BuscarDisponibles(fechaInicio.Value, fechaFin.Value, idTipo, cupoMin, pagina, tamaño);
+
+            ViewBag.FechaInicio = fechaInicio.Value;
+            ViewBag.FechaFin = fechaFin.Value;
+            ViewBag.IdTipoFiltro = idTipo;
+            ViewBag.CupoMinFiltro = cupoMin;
+            ViewBag.Resultados = resultados;
+            ViewBag.Pagina = pagina;
+            ViewBag.TotalPaginas = (int)Math.Ceiling((double)total / tamaño);
+            ViewBag.TotalResultados = total;
+
+            return View();
+        }
+
+        // GET: Reserva/PrepararReserva/5  (llamado desde el botón "Reservar" del paso 2)
+        [HttpGet]
+        public IActionResult PrepararReserva(int idInmueble, DateTime fechaInicio, DateTime fechaFin)
+        {
+            // Peek no marca para eliminación
+            var idInquilino = TempData.Peek("IdInquilino");
+            if (idInquilino == null)
+                return RedirectToAction(nameof(BuscarInquilino));
+
+            TempData["IdInmueble"] = idInmueble;
+            TempData["FechaInicio"] = fechaInicio;
+            TempData["FechaFin"] = fechaFin;
+
+            // Preservar los datos del inquilino para el siguiente request
+            TempData.Keep("IdInquilino");
+            TempData.Keep("NombreInquilino");
+
+            return RedirectToAction(nameof(Create));
         }
 
         // Metodos auxiliares.

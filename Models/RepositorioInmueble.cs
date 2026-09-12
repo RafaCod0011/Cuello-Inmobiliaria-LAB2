@@ -284,6 +284,120 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             return res;
         }
 
+        public IList<Inmueble> BuscarDisponibles(DateTime desde, DateTime hasta, int? idTipo, int? cupoMin, int pagina, int tamano)
+        {
+            var res = new List<Inmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT i.IdInmueble, i.Direccion, i.Cupo, i.PrecioPorDia, i.PorcentajeReserva,
+                        i.Estado, i.Latitud, i.Longitud, i.IdPropietario, i.IdTipo,
+                        t.Nombre AS TipoNombre,
+                        (SELECT Ruta FROM ImagenInmueble 
+                            WHERE IdInmueble = i.IdInmueble 
+                            ORDER BY Orden LIMIT 1) AS PortadaRuta
+                    FROM Inmueble i
+                    LEFT JOIN TipoInmueble t ON i.IdTipo = t.IdTipo
+                    WHERE i.Estado = 'Activo'
+                    AND NOT EXISTS (
+                        SELECT 1 FROM Reserva r
+                        WHERE r.IdInmueble = i.IdInmueble
+                            AND (r.FechaTerminacionAnticipada IS NULL OR r.FechaTerminacionAnticipada >= @desde)
+                            AND r.FechaInicio <= @hasta
+                            AND r.FechaFin >= @desde
+                    )
+                ";
+                if (idTipo.HasValue) sql += " AND i.IdTipo = @idTipo";
+                if (cupoMin.HasValue) sql += " AND i.Cupo >= @cupoMin";
+                sql += $" LIMIT {tamano} OFFSET {(pagina - 1) * tamano}";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@desde", desde);
+                    command.Parameters.AddWithValue("@hasta", hasta);
+                    if (idTipo.HasValue) command.Parameters.AddWithValue("@idTipo", idTipo.Value);
+                    if (cupoMin.HasValue) command.Parameters.AddWithValue("@cupoMin", cupoMin.Value);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var inm = new Inmueble
+                        {
+                            IdInmueble = reader.GetInt32("IdInmueble"),
+                            Direccion = reader.GetString("Direccion"),
+                            Cupo = reader.GetInt32("Cupo"),
+                            PrecioPorDia = reader.GetDecimal("PrecioPorDia"),
+                            PorcentajeReserva = reader.GetDecimal("PorcentajeReserva"),
+                            Estado = Enum.Parse<EstadoInmueble>(reader.GetString("Estado")),
+                            Latitud = reader.IsDBNull(reader.GetOrdinal("Latitud")) ? null : reader.GetDecimal("Latitud"),
+                            Longitud = reader.IsDBNull(reader.GetOrdinal("Longitud")) ? null : reader.GetDecimal("Longitud"),
+                            IdPropietario = reader.GetInt32("IdPropietario"),
+                            IdTipo = reader.GetInt32("IdTipo")
+                        };
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("TipoNombre")))
+                        {
+                            inm.Tipo = new TipoInmueble
+                            {
+                                IdTipo = inm.IdTipo,
+                                Nombre = reader.GetString("TipoNombre")
+                            };
+                        }
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("PortadaRuta")))
+                        {
+                            inm.Imagenes = new List<ImagenInmueble>
+                            {
+                                new ImagenInmueble
+                                {
+                                    IdInmueble = inm.IdInmueble,
+                                    Ruta = reader.GetString("PortadaRuta"),
+                                    Orden = 0
+                                }
+                            };
+                        }
+
+                        res.Add(inm);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarDisponibles(DateTime desde, DateTime hasta, int? idTipo, int? cupoMin)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT COUNT(1)
+                    FROM Inmueble i
+                    WHERE i.Estado = 'Activo'
+                    AND NOT EXISTS (
+                        SELECT 1 FROM Reserva r
+                        WHERE r.IdInmueble = i.IdInmueble
+                            AND (r.FechaTerminacionAnticipada IS NULL OR r.FechaTerminacionAnticipada >= @desde)
+                            AND r.FechaInicio <= @hasta
+                            AND r.FechaFin >= @desde
+                    )
+                ";
+                if (idTipo.HasValue) sql += " AND i.IdTipo = @idTipo";
+                if (cupoMin.HasValue) sql += " AND i.Cupo >= @cupoMin";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@desde", desde);
+                    command.Parameters.AddWithValue("@hasta", hasta);
+                    if (idTipo.HasValue) command.Parameters.AddWithValue("@idTipo", idTipo.Value);
+                    if (cupoMin.HasValue) command.Parameters.AddWithValue("@cupoMin", cupoMin.Value);
+
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+
         // Mapear desde IDataReader
         private Inmueble MapInmueble(MySqlDataReader reader)
         {

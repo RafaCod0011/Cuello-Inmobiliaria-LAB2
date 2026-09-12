@@ -1,0 +1,187 @@
+@{
+    ViewData["Title"] = "Buscar inmuebles disponibles";
+    var tipos = (IList<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>)ViewBag.Tipos
+                ?? new List<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>();
+    var resultados = (IList<Cuello_Inmobiliaria_LAB2.Models.Inmueble>)ViewBag.Resultados;
+    var idInquilino = ViewBag.IdInquilino;
+    var nombreInquilino = ViewBag.NombreInquilino;
+
+    var fechaInicio = ViewBag.FechaInicio as DateTime?;
+    var fechaFin = ViewBag.FechaFin as DateTime?;
+    var idTipoFiltro = ViewBag.IdTipoFiltro as int?;
+    var cupoMinFiltro = ViewBag.CupoMinFiltro as int?;
+    var paginaActual = (int?)ViewBag.Pagina ?? 1;
+    var totalPaginas = (int?)ViewBag.TotalPaginas ?? 1;
+    var totalResultados = (int?)ViewBag.TotalResultados ?? 0;
+}
+
+<section class="edit-page">
+    <div class="edit-card mb-4">
+        <header class="edit-card-header">
+            <div class="edit-icon" aria-hidden="true"><i class="fa-solid fa-building"></i></div>
+            <div>
+                <p class="edit-eyebrow">Nueva reserva</p>
+                <h1>Paso 2: Buscar inmuebles</h1>
+                <p class="edit-description">Inquilino: <strong>@nombreInquilino</strong></p>
+            </div>
+        </header>
+
+        <form asp-action="BuscarInmuebles" method="get" class="edit-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (ViewBag.Mensaje != null)
+            {
+                <div class="alert alert-success">@ViewBag.Mensaje</div>
+            }
+
+            <div class="edit-fields reservation-fields">
+                <div class="form-group">
+                    <label for="fechaInicio" class="control-label">Fecha de inicio</label>
+                    <input type="date" id="fechaInicio" name="fechaInicio" class="form-control"
+                           value="@(fechaInicio?.ToString("yyyy-MM-dd"))" required />
+                </div>
+                <div class="form-group">
+                    <label for="fechaFin" class="control-label">Fecha de fin</label>
+                    <input type="date" id="fechaFin" name="fechaFin" class="form-control"
+                           value="@(fechaFin?.ToString("yyyy-MM-dd"))" required />
+                </div>
+                <div class="form-group">
+                    <label for="idTipo" class="control-label">Tipo (opcional)</label>
+                    <select id="idTipo" name="idTipo" class="form-control">
+                        <option value="">Cualquier tipo</option>
+                        @foreach (var t in tipos)
+                        {
+                            if (idTipoFiltro == t.IdTipo)
+                            {
+                                <option value="@t.IdTipo" selected>@t.Nombre</option>
+                            }
+                            else
+                            {
+                                <option value="@t.IdTipo">@t.Nombre</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cupoMin" class="control-label">Cupo mínimo (opcional)</label>
+                    <input type="number" id="cupoMin" name="cupoMin" class="form-control" min="1"
+                           value="@cupoMinFiltro" />
+                </div>
+            </div>
+
+            <div class="edit-actions">
+                <a asp-action="BuscarInquilino" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Volver
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i>Buscar inmuebles
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@if (resultados != null)
+{
+    <h3 class="mt-4">Resultados (@totalResultados)</h3>
+
+    @if (!resultados.Any())
+    {
+        <div class="alert alert-info">
+            No se encontraron inmuebles disponibles con esos criterios.
+        </div>
+    }
+    else
+    {
+        <div class="property-grid">
+            @foreach (var inm in resultados)
+            {
+                <article class="property-card">
+                    <div class="property-cover">
+                        @{
+                            var portada = inm.Imagenes?.FirstOrDefault(i => i.Orden == 0) ?? inm.Imagenes?.FirstOrDefault();
+                        }
+                        @if (portada != null)
+                        {
+                            <img src="@portada.Ruta" alt="Portada de @inm.Direccion" />
+                        }
+                        else
+                        {
+                            <div class="property-cover-placeholder">
+                                <i class="fa-solid fa-building"></i>
+                                <span>Sin portada</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="property-content">
+                        <div class="property-heading">
+                            <span class="property-code">Código #@inm.IdInmueble</span>
+                            <h2>@inm.Direccion</h2>
+                        </div>
+                        <dl class="property-data">
+                            <div>
+                                <dt>Cupo</dt>
+                                <dd>@inm.Cupo personas</dd>
+                            </div>
+                            <div>
+                                <dt>Precio por día</dt>
+                                <dd class="property-price">@inm.PrecioPorDia.ToString("C", new
+                                                                                                                                                                        System.Globalization.CultureInfo("es-AR"))</dd>
+                                </div>
+                                <div>
+                                    <dt>Reserva</dt>
+                                    <dd>@inm.PorcentajeReserva.ToString("0.##")%</dd>
+                                </div>
+                                <div>
+                                    <dt>Tipo</dt>
+                                    <dd>@(inm.Tipo?.Nombre ?? "Sin tipo")</dd>
+                                </div>
+                            </dl>
+                            <div class="property-actions">
+                                <a asp-action="PrepararReserva" asp-route-idInmueble="@inm.IdInmueble"
+                                   asp-route-fechaInicio="@(fechaInicio?.ToString("yyyy-MM-dd"))"
+                                   asp-route-fechaFin="@(fechaFin?.ToString("yyyy-MM-dd"))" class="btn btn-success btn-sm">
+                                    <i class="fa-solid fa-calendar-plus me-1"></i>Reservar
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <!-- Paginación -->
+            @if (totalPaginas > 1)
+            {
+                <nav aria-label="Paginación de inmuebles" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="BuscarInmuebles"
+                               asp-route-fechaInicio="@(fechaInicio?.ToString("yyyy-MM-dd"))"
+                               asp-route-fechaFin="@(fechaFin?.ToString("yyyy-MM-dd"))" asp-route-idTipo="@idTipoFiltro"
+                               asp-route-cupoMin="@cupoMinFiltro" asp-route-pagina="@(paginaActual - 1)">
+                                <i class="fa-solid fa-angles-left"></i>
+                            </a>
+                        </li>
+                        @for (int i = 1; i <= totalPaginas; i++)
+                        {
+                            <li class="page-item @(i == paginaActual ? "active" : "")">
+                                <a class="page-link" asp-action="BuscarInmuebles"
+                                   asp-route-fechaInicio="@(fechaInicio?.ToString("yyyy-MM-dd"))"
+                                   asp-route-fechaFin="@(fechaFin?.ToString("yyyy-MM-dd"))" asp-route-idTipo="@idTipoFiltro"
+                                   asp-route-cupoMin="@cupoMinFiltro" asp-route-pagina="@i">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <a class="page-link" asp-action="BuscarInmuebles"
+                               asp-route-fechaInicio="@(fechaInicio?.ToString("yyyy-MM-dd"))"
+                               asp-route-fechaFin="@(fechaFin?.ToString("yyyy-MM-dd"))" asp-route-idTipo="@idTipoFiltro"
+                               asp-route-cupoMin="@cupoMinFiltro" asp-route-pagina="@(paginaActual + 1)">
+                                <i class="fa-solid fa-angles-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+    }
+</section>

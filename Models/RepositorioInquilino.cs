@@ -171,6 +171,34 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             }
             return i;
         }
+        public Inquilino? ObtenerPorDni(string dni)
+        {
+            Inquilino? i = null;
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT IdInquilino, Nombre, Apellido, Dni, Telefono, Email FROM Inquilino WHERE Dni = @dni";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dni", dni);
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        i = new Inquilino
+                        {
+                            IdInquilino = reader.GetInt32("IdInquilino"),
+                            Nombre = reader.GetString("Nombre"),
+                            Apellido = reader.GetString("Apellido"),
+                            Dni = reader.GetString("Dni"),
+                            Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
+                            Email = reader.GetString("Email")
+                        };
+                    }
+                    connection.Close();
+                }
+            }
+            return i;
+        }
 
         public Inquilino? ObtenerPorEmail(string email)
         {
