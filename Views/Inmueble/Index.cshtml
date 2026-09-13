@@ -4,6 +4,17 @@
     ViewData["Title"] = "Inmuebles";
     var Pagina = ViewBag.Pagina ?? 1;
     var TotalPaginas = ViewBag.TotalPaginas ?? 1;
+
+    var tipos = (IList<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>)ViewBag.Tipos
+                ?? new List<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>();
+    var busquedaActual = ViewBag.Busqueda as string;
+    var estadoActual = ViewBag.Estado as string;
+    var idTipoActual = ViewBag.IdTipo as int?;
+    var totalRegistros = (int?)ViewBag.TotalRegistros ?? 0;
+
+    var hayFiltros = !string.IsNullOrWhiteSpace(busquedaActual)
+                     || !string.IsNullOrWhiteSpace(estadoActual)
+                     || idTipoActual.HasValue;
 }
 
 <section class="index-page">
@@ -34,50 +45,125 @@
         </div>
     }
 
-    <div class="property-grid">
-        @foreach (var item in Model)
-        {
-            var portada = item.Imagenes?.FirstOrDefault(i => i.Orden == 0) ?? item.Imagenes?.FirstOrDefault();
-            <article class="property-card">
-                <div class="property-cover">
-                    @if (portada != null)
+    <!-- Filtros -->
+    <div class="index-table-wrapper mb-3" style="padding: 1rem;">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="busqueda" class="form-label">Dirección</label>
+                <input type="text" id="busqueda" name="busqueda" class="form-control"
+                       placeholder="Buscar por dirección..." value="@busquedaActual" />
+            </div>
+            <div class="col-md-2">
+                <label for="estado" class="form-label">Estado</label>
+                <select id="estado" name="estado" class="form-control">
+                    <option value="">Todos</option>
+                    @if (estadoActual == "Activo")
                     {
-                        <img src="@portada.Ruta" alt="Portada de @item.Direccion" />
+                        <option value="Activo" selected>Activo</option>
                     }
                     else
                     {
-                        <div class="property-cover-placeholder">
-                            <i class="fa-solid fa-building" aria-hidden="true"></i>
-                            <span>Sin portada</span>
-                        </div>
+                        <option value="Activo">Activo</option>
                     }
-                    <span
-                        class="property-status badge @(item.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
-                        @Html.DisplayFor(modelItem => item.Estado)
-                    </span>
-                </div>
-                <div class="property-content">
-                    <div class="property-heading">
-                        <span class="property-code">Código #@item.IdInmueble</span>
-                        <h2>@item.Direccion</h2>
+                    @if (estadoActual == "Suspendido")
+                    {
+                        <option value="Suspendido" selected>Suspendido</option>
+                    }
+                    else
+                    {
+                        <option value="Suspendido">Suspendido</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="idTipo" class="form-label">Tipo</label>
+                <select id="idTipo" name="idTipo" class="form-control">
+                    <option value="">Todos</option>
+                    @foreach (var t in tipos)
+                    {
+                        if (idTipoActual == t.IdTipo)
+                        {
+                            <option value="@t.IdTipo" selected>@t.Nombre</option>
+                        }
+                        else
+                        {
+                            <option value="@t.IdTipo">@t.Nombre</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                    <i class="fa-solid fa-eraser me-1"></i> Limpiar
+                </a>
+            </div>
+        </form>
+        @if (hayFiltros)
+        {
+            <small class="text-muted d-block mt-2">
+                Mostrando @totalRegistros resultado(s) para los filtros aplicados.
+            </small>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            @(hayFiltros
+                ? "No se encontraron inmuebles con los filtros aplicados."
+                : "No hay inmuebles registrados.")
+        </div>
+    }
+    else
+    {
+        <div class="property-grid">
+            @foreach (var item in Model)
+            {
+                var portada = item.Imagenes?.FirstOrDefault(i => i.Orden == 0) ?? item.Imagenes?.FirstOrDefault();
+                <article class="property-card">
+                    <div class="property-cover">
+                        @if (portada != null)
+                        {
+                            <img src="@portada.Ruta" alt="Portada de @item.Direccion" />
+                        }
+                        else
+                        {
+                            <div class="property-cover-placeholder">
+                                <i class="fa-solid fa-building" aria-hidden="true"></i>
+                                <span>Sin portada</span>
+                            </div>
+                        }
+                        <span
+                            class="property-status badge @(item.Estado == EstadoInmueble.Activo ? "bg-success" : "bg-warning")">
+                            @Html.DisplayFor(modelItem => item.Estado)
+                        </span>
                     </div>
-                    <dl class="property-data">
-                        <div>
-                            <dt>Tipo</dt>
-                            <dd>@(item.Tipo?.Nombre ?? "Sin tipo")</dd>
+                    <div class="property-content">
+                        <div class="property-heading">
+                            <span class="property-code">Código #@item.IdInmueble</span>
+                            <h2>@item.Direccion</h2>
                         </div>
-                        <div>
-                            <dt>Propietario</dt>
-                            <dd>@(item.Propietario?.ToString() ?? "Sin propietario")</dd>
-                        </div>
-                        <div>
-                            <dt>Cupo</dt>
-                            <dd><i class="fa-solid fa-users" aria-hidden="true"></i> @item.Cupo personas</dd>
-                        </div>
-                        <div>
-                            <dt>Precio por día</dt>
-                            <dd class="property-price">@item.PrecioPorDia.ToString("C", new
-                                                            System.Globalization.CultureInfo("es-AR"))</dd>
+                        <dl class="property-data">
+                            <div>
+                                <dt>Tipo</dt>
+                                <dd>@(item.Tipo?.Nombre ?? "Sin tipo")</dd>
+                            </div>
+                            <div>
+                                <dt>Propietario</dt>
+                                <dd>@(item.Propietario?.ToString() ?? "Sin propietario")</dd>
+                            </div>
+                            <div>
+                                <dt>Cupo</dt>
+                                <dd><i class="fa-solid fa-users" aria-hidden="true"></i> @item.Cupo personas</dd>
+                            </div>
+                            <div>
+                                <dt>Precio por día</dt>
+                                <dd class="property-price">
+                                    @item.PrecioPorDia.ToString("C", new System.Globalization.CultureInfo("es-AR"))
+                                </dd>
                             </div>
                             <div>
                                 <dt>Reserva</dt>
@@ -94,59 +180,72 @@
                         </dl>
                         <div class="property-actions" role="group" aria-label="Acciones del inmueble">
                             <a class="btn btn-info btn-sm" asp-action="Ver" asp-route-id="@item.IdInmueble"
-                               title="Ver inmueble"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>Ver</span></a>
+                               title="Ver inmueble">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Ver</span>
+                            </a>
                             <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@item.IdInmueble"
-                               title="Editar inmueble"><i class="fa-solid fa-pen"
-                                                           aria-hidden="true"></i><span>Editar</span></a>
-                                <a class="btn btn-warning" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
-                                   title="Gestionar imágenes"><i class="fa-solid fa-images" aria-hidden="true"></i></a>
-                                <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
-                                   title="Eliminar inmueble"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></a>
-                            </div>
+                               title="Editar inmueble">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i><span>Editar</span>
+                            </a>
+                            <a class="btn btn-warning" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
+                               title="Gestionar imágenes">
+                                <i class="fa-solid fa-images" aria-hidden="true"></i>
+                            </a>
+                            <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
+                               title="Eliminar inmueble">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                            </a>
                         </div>
-                    </article>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                @if (Pagina > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)"
+                           asp-route-busqueda="@busquedaActual" asp-route-estado="@estadoActual"
+                           asp-route-idTipo="@idTipoActual" aria-label="Anterior">
+                            <i class="fa-solid fa-angles-left"></i>
+                        </a>
+                    </li>
                 }
-            </div>
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+                    </li>
+                }
 
-            <!-- Paginación -->
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    @if (Pagina > 1)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)" aria-label="Anterior">
-                                <i class="fa-solid fa-angles-left"></i>
-                            </a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
-                        </li>
-                    }
+                @for (int i = 1; i <= TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == Pagina ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-busqueda="@busquedaActual"
+                           asp-route-estado="@estadoActual" asp-route-idTipo="@idTipoActual">@i</a>
+                    </li>
+                }
 
-                    @for (int i = 1; i <= TotalPaginas; i++)
-                    {
-                        <li class="page-item @(i == Pagina ? "active" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@i">@i</a>
-                        </li>
-                    }
-
-                    @if (Pagina < TotalPaginas)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)" aria-label="Siguiente">
-                                <i class="fa-solid fa-angles-right"></i>
-                            </a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
-                        </li>
-                    }
-                </ul>
-            </nav>
-        </section>
+                @if (Pagina < TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)"
+                           asp-route-busqueda="@busquedaActual" asp-route-estado="@estadoActual"
+                           asp-route-idTipo="@idTipoActual" aria-label="Siguiente">
+                            <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</section>

@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "Editar Reserva";
-    var inmuebles = (IList<Cuello_Inmobiliaria_LAB2.Models.Inmueble>)ViewBag.Inmuebles;
-    var inquilinos = (IList<Cuello_Inmobiliaria_LAB2.Models.Inquilino>)ViewBag.Inquilinos;
 
     var yaComenzo = Model.FechaInicio <= DateTime.Today;
     var estaFinalizada = Model.FechaFin < DateTime.Today;
@@ -13,7 +11,7 @@
                         ?? new List<Cuello_Inmobiliaria_LAB2.Models.Reserva>();
     var tieneExtensiones = extensiones.Any();
 
-    // Bloquea edición completa si ya comenzó, finalizó, terminó o tiene extensiones
+    // Bloquea edición
     var bloqueado = yaComenzo || estaFinalizada || estaTerminada || tieneExtensiones;
 
     // Tiene pagos no anulados
@@ -21,7 +19,6 @@
                         ?? new List<Cuello_Inmobiliaria_LAB2.Models.Pago>())
                         .Any(p => !p.Anulado);
 
-    // Puede editar
     var puedeEditar = !bloqueado;
 }
 
@@ -95,11 +92,10 @@
             <div class="edit-fields reservation-fields">
                 <div class="form-group reservation-wide-field">
                     <label asp-for="IdInmueble" class="control-label"></label>
-                    <select asp-for="IdInmueble" class="form-control" disabled="@bloqueado">
-                        <option value="">Seleccionar inmueble</option>
-                        @foreach (var item in inmuebles)
+                    <select asp-for="IdInmueble" class="form-control" id="IdInmueble" disabled="@bloqueado">
+                        @if (ViewBag.InmuebleId != null)
                         {
-                            <option value="@item.IdInmueble">@item.Direccion</option>
+                            <option value="@ViewBag.InmuebleId" selected>@ViewBag.InmuebleSeleccionado</option>
                         }
                     </select>
                     <span asp-validation-for="IdInmueble" class="text-danger"></span>
@@ -107,7 +103,7 @@
 
                 <div class="form-group reservation-wide-field">
                     <label asp-for="IdInquilino" class="control-label"></label>
-                    <select asp-for="IdInquilino" class="form-control select2" disabled="@bloqueado">
+                    <select asp-for="IdInquilino" class="form-control" id="IdInquilino" disabled="@bloqueado">
                         @if (ViewBag.InquilinoId != null)
                         {
                             <option value="@ViewBag.InquilinoId" selected>@ViewBag.InquilinoSeleccionado</option>
@@ -137,7 +133,7 @@
                     }
                     else if (tienePagos)
                     {
-                        <input class="form-control"
+                        <input id="MontoDiario" class="form-control"
                                value="@Model.MontoDiario.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
                                disabled />
                         <input type="hidden" asp-for="MontoDiario" />
@@ -145,7 +141,7 @@
                     }
                     else
                     {
-                        <input asp-for="MontoDiario" class="form-control" />
+                        <input asp-for="MontoDiario" class="form-control" id="MontoDiario" />
                     }
 
                     <span asp-validation-for="MontoDiario" class="text-danger"></span>
@@ -171,27 +167,63 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
     <script>
         $(document).ready(function () {
-            $('#IdInquilino').select2({
-                language: "es",
-                theme: 'bootstrap-5',
-                placeholder: "Buscar inquilino por nombre, apellido o DNI...",
-                minimumInputLength: 2,
-                allowClear: true,
-                ajax: {
-                    delay: 250,
-                    dataType: "json",
-                    cache: true,
-                    url: function (params) {
-                        let q = params.term ? encodeURIComponent(params.term) : "";
-                        return '@Url.Action("Buscar", "Inquilino")?term=' + q;
-                    },
-                    processResults: function (data) {
-                        return { results: data };
-                    }
-                }
+            @if (!bloqueado)
+                {
+                    <text>
+                            $('#IdInmueble').select2({
+                                language: "es",
+                            theme: 'bootstrap-5',
+                            placeholder: "Buscar inmueble por dirección...",
+                            minimumInputLength: 2,
+                            allowClear: true,
+                            ajax: {
+                                delay: 250,
+                            dataType: "json",
+                            cache: true,
+                            url: function (params) {
+                                let q = params.term ? encodeURIComponent(params.term) : "";
+                            return '@Url.Action("Buscar", "Inmueble")?term=' + q;
+                                        },
+                            processResults: function (data) {
+                                            return {results: data };
+                                        }
+                                    }
+                                }).on('select2:select', function (e) {
+                                @if (!tienePagos)
+                                {
+                                    <text>
+                                            var precio = e.params.data.precio;
+                                            if (precio) {
+                                                $('#MontoDiario').val(precio);
+                                                    }
+                                    </text>
+                                    }
+                                });
+
+                            $('#IdInquilino').select2({
+                                language: "es",
+                            theme: 'bootstrap-5',
+                            placeholder: "Buscar inquilino por nombre, apellido o DNI...",
+                            minimumInputLength: 2,
+                            allowClear: true,
+                            ajax: {
+                                delay: 250,
+                            dataType: "json",
+                            cache: true,
+                            url: function (params) {
+                                let q = params.term ? encodeURIComponent(params.term) : "";
+                            return '@Url.Action("Buscar", "Inquilino")?term=' + q;
+                                        },
+                            processResults: function (data) {
+                                            return {results: data };
+                                        }
+                                    }
+                                });
+                    </text>
+            }
             });
-        });
     </script>
 }

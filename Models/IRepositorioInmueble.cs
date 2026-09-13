@@ -12,5 +12,8 @@ namespace Cuello_Inmobiliaria_LAB2.Models
         int ContarDisponibles(DateTime desde, DateTime hasta, int? idTipo, int? cupoMin);
         bool ExisteDireccion(string direccion, int? idExcluir = null);
         // IList<Inmueble> ObtenerDisponiblesEntreFechas(DateTime desde, DateTime hasta);
+
+        IList<Inmueble> BuscarConFiltros(string? direccion, string? estado, int? idTipo, int pagina, int tamano);
+        int ContarConFiltros(string? direccion, string? estado, int? idTipo);
     }
 }

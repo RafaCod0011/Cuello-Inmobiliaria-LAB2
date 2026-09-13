@@ -36,21 +36,51 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         //GET: Inmuebles
-        public ActionResult Index(int pagina = 1)
+        public ActionResult Index(int pagina = 1, string? busqueda = null, string? estado = null, int? idTipo = null)
         {
             try
             {
                 var tamaño = 5;
-                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño);
+                pagina = Math.Max(pagina, 1);
+
+                // Guardar filtros para la vista
+                ViewBag.Busqueda = busqueda;
+                ViewBag.Estado = estado;
+                ViewBag.IdTipo = idTipo;
+
+                IList<Inmueble> lista;
+                int total;
+
+                bool sinFiltros = string.IsNullOrWhiteSpace(busqueda)
+                                && string.IsNullOrWhiteSpace(estado)
+                                && !idTipo.HasValue;
+
+                if (sinFiltros)
+                {
+                    // Camino original
+                    lista = repositorio.ObtenerLista(pagina, tamaño);
+                    total = repositorio.ObtenerCantidad();
+                }
+                else
+                {
+                    // Camino con filtros
+                    lista = repositorio.BuscarConFiltros(busqueda, estado, idTipo, pagina, tamaño);
+                    total = repositorio.ContarConFiltros(busqueda, estado, idTipo);
+                }
+
                 ViewBag.Pagina = pagina;
-                var total = repositorio.ObtenerCantidad();
                 ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
+                ViewBag.TotalRegistros = total;
+
                 if (TempData.ContainsKey("Mensaje"))
                     ViewBag.Mensaje = TempData["Mensaje"];
 
-                // Cargar relaciones (Propietario, Tipo) para mostrar en la vista
+                // Cargar relaciones (propietario, tipo)
                 CargarRelaciones(lista);
                 CargarPortadas(lista);
+
+                // Lista de tipos para el select de filtro
+                ViewBag.Tipos = repositorioTipo?.ObtenerLista(1, int.MaxValue) ?? new List<TipoInmueble>();
 
                 return View(lista);
             }
@@ -134,10 +164,19 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 if (entidad == null)
                     return NotFound();
 
-                // Cargar relaciones para mostrar datos en el formulario
-
                 CargarRelacion(entidad);
                 CargarListasDesplegables(entidad.IdPropietario, entidad.IdTipo);
+
+                // Select2 Propietario
+                var propietarioSeleccionado = repositorioPropietario.ObtenerPorId(entidad.IdPropietario);
+                ViewBag.PropietarioId = entidad.IdPropietario;
+                ViewBag.PropietarioSeleccionado = propietarioSeleccionado?.ToString();
+
+                // Select2 Tipo
+                var tipoSeleccionado = repositorioTipo.ObtenerPorId(entidad.IdTipo);
+                ViewBag.TipoId = entidad.IdTipo;
+                ViewBag.TipoSeleccionado = tipoSeleccionado?.Nombre;
+
                 return View(entidad);
             }
             catch (Exception ex)
@@ -238,6 +277,32 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
             }
         }
 
+        // GET: Inmueble/Buscar?term=...
+        [HttpGet]
+        public IActionResult Buscar(string term)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(term) || term.Length < 2)
+                    return Json(new List<object>());
+
+                var resultados = repositorio.BuscarPorDireccion(term)
+                    .Select(i => new
+                    {
+                        id = i.IdInmueble,
+                        text = i.Direccion,
+                        precio = i.PrecioPorDia
+                    })
+                    .ToList();
+
+                return Json(resultados);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al buscar inmuebles");
+                return Json(new List<object>());
+            }
+        }
         // Cargar listas desplegables para Propietarios y Tipos de Inmueble.
 
         private void CargarListasDesplegables(int? propietarioSeleccionado = null, int? tipoSeleccionado = null)

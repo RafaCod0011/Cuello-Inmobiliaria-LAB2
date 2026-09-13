@@ -149,5 +149,30 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+        // GET: TipoInmueble/Buscar?term=...
+        [HttpGet]
+        public IActionResult Buscar(string term)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(term) || term.Length < 1)
+                    return Json(new List<object>());
+
+                var resultados = repositorio.BuscarPorNombre(term)
+                    .Select(t => new
+                    {
+                        id = t.IdTipo,
+                        text = t.Nombre
+                    })
+                    .ToList();
+
+                return Json(resultados);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al buscar tipos de inmueble");
+                return Json(new List<object>());
+            }
+        }
     }
 }

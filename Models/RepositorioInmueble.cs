@@ -398,6 +398,76 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             }
         }
 
+        public IList<Inmueble> BuscarConFiltros(string? direccion, string? estado, int? idTipo, int pagina, int tamano)
+        {
+            var res = new List<Inmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT IdInmueble, Direccion, Cupo, PrecioPorDia, PorcentajeReserva, 
+                        Estado, Latitud, Longitud, IdPropietario, IdTipo
+                    FROM Inmueble
+                    WHERE 1=1
+                ";
+
+                if (!string.IsNullOrWhiteSpace(direccion))
+                    sql += " AND Direccion LIKE @direccion";
+                if (!string.IsNullOrWhiteSpace(estado))
+                    sql += " AND Estado = @estado";
+                if (idTipo.HasValue)
+                    sql += " AND IdTipo = @idTipo";
+
+                sql += $" LIMIT {tamano} OFFSET {(pagina - 1) * tamano}";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    if (!string.IsNullOrWhiteSpace(direccion))
+                        command.Parameters.AddWithValue("@direccion", "%" + direccion + "%");
+                    if (!string.IsNullOrWhiteSpace(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
+                    if (idTipo.HasValue)
+                        command.Parameters.AddWithValue("@idTipo", idTipo.Value);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapInmueble(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarConFiltros(string? direccion, string? estado, int? idTipo)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT COUNT(IdInmueble) FROM Inmueble WHERE 1=1";
+
+                if (!string.IsNullOrWhiteSpace(direccion))
+                    sql += " AND Direccion LIKE @direccion";
+                if (!string.IsNullOrWhiteSpace(estado))
+                    sql += " AND Estado = @estado";
+                if (idTipo.HasValue)
+                    sql += " AND IdTipo = @idTipo";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    if (!string.IsNullOrWhiteSpace(direccion))
+                        command.Parameters.AddWithValue("@direccion", "%" + direccion + "%");
+                    if (!string.IsNullOrWhiteSpace(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
+                    if (idTipo.HasValue)
+                        command.Parameters.AddWithValue("@idTipo", idTipo.Value);
+
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+        
         // Mapear desde IDataReader
         private Inmueble MapInmueble(MySqlDataReader reader)
         {

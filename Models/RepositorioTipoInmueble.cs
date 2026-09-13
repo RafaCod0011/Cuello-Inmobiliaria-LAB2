@@ -181,5 +181,34 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             }
             return res;
         }
+        public IList<TipoInmueble> BuscarPorNombre(string nombre)
+        {
+            var res = new List<TipoInmueble>();
+            nombre = "%" + nombre + "%";
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"SELECT IdTipo, Nombre 
+                            FROM TipoInmueble 
+                            WHERE Nombre LIKE @nombre 
+                            ORDER BY Nombre
+                            LIMIT 20";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@nombre", nombre);
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(new TipoInmueble
+                        {
+                            IdTipo = reader.GetInt32("IdTipo"),
+                            Nombre = reader.GetString("Nombre")
+                        });
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
     }
 }

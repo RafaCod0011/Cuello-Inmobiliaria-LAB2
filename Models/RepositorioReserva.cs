@@ -373,6 +373,118 @@ namespace Cuello_Inmobiliaria_LAB2.Models
             }
         }
 
+        public IList<Reserva> BuscarConFiltros(string? estado, DateTime? desde, DateTime? hasta, int? porTerminarDias, int pagina, int tamano)
+        {
+            var res = new List<Reserva>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                var (whereSql, parametros) = ConstruirFiltros(estado, desde, hasta, porTerminarDias);
+
+                string sql = $@"
+                    SELECT r.IdReserva, r.FechaInicio, r.FechaFin, r.MontoDiario, r.FechaCreacion, 
+                        r.FechaTerminacionAnticipada, r.IdInmueble, r.IdInquilino, 
+                        r.IdUsuarioCreacion, r.IdUsuarioTerminacion, r.IdReservaOrigen,
+                        u1.Nombre AS NombreCreador, u1.Apellido AS ApellidoCreador,
+                        u2.Nombre AS NombreTerminador, u2.Apellido AS ApellidoTerminador
+                    FROM Reserva r
+                    LEFT JOIN Usuario u1 ON r.IdUsuarioCreacion = u1.IdUsuario
+                    LEFT JOIN Usuario u2 ON r.IdUsuarioTerminacion = u2.IdUsuario
+                    WHERE 1=1 {whereSql}
+                    LIMIT {tamano} OFFSET {(pagina - 1) * tamano}
+                ";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    foreach (var p in parametros)
+                        command.Parameters.AddWithValue(p.Key, p.Value);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapReserva(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarConFiltros(string? estado, DateTime? desde, DateTime? hasta, int? porTerminarDias)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                var (whereSql, parametros) = ConstruirFiltros(estado, desde, hasta, porTerminarDias);
+
+                string sql = $"SELECT COUNT(IdReserva) FROM Reserva r WHERE 1=1 {whereSql}";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    foreach (var p in parametros)
+                        command.Parameters.AddWithValue(p.Key, p.Value);
+
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+
+        // Método auxiliar WHERE dinámico
+        private (string whereSql, Dictionary<string, object> parametros) ConstruirFiltros(
+            string? estado, DateTime? desde, DateTime? hasta, int? porTerminarDias)
+        {
+            var where = "";
+            var parametros = new Dictionary<string, object>();
+            var hoy = DateTime.Today;
+
+            // Filtro por estado
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                switch (estado)
+                {
+                    case "Vigente":
+                        where += " AND r.FechaTerminacionAnticipada IS NULL " +
+                                " AND r.FechaInicio <= @hoy AND r.FechaFin >= @hoy";
+                        parametros["@hoy"] = hoy;
+                        break;
+                    case "Proxima":
+                        where += " AND r.FechaTerminacionAnticipada IS NULL AND r.FechaInicio > @hoy";
+                        parametros["@hoy"] = hoy;
+                        break;
+                    case "Finalizada":
+                        where += " AND r.FechaTerminacionAnticipada IS NULL AND r.FechaFin < @hoy";
+                        parametros["@hoy"] = hoy;
+                        break;
+                    case "Terminada":
+                        where += " AND r.FechaTerminacionAnticipada IS NOT NULL";
+                        break;
+                }
+            }
+
+            // Filtro rango de fechas
+            if (desde.HasValue)
+            {
+                where += " AND r.FechaFin >= @desde";
+                parametros["@desde"] = desde.Value;
+            }
+            if (hasta.HasValue)
+            {
+                where += " AND r.FechaInicio <= @hasta";
+                parametros["@hasta"] = hasta.Value;
+            }
+
+            // Filtro "por terminar en X días"
+            if (porTerminarDias.HasValue && porTerminarDias.Value > 0)
+            {
+                where += " AND r.FechaTerminacionAnticipada IS NULL " +
+                        " AND r.FechaFin BETWEEN @hoy AND @fechaLimite";
+                parametros["@hoy"] = hoy;
+                parametros["@fechaLimite"] = hoy.AddDays(porTerminarDias.Value);
+            }
+
+            return (where, parametros);
+        }
+
         private Reserva MapReserva(MySqlDataReader reader)
         {
             var r = new Reserva

@@ -39,15 +39,45 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
         }
 
         // GET: Reserva/Index
-        public ActionResult Index(int pagina = 1)
+        public ActionResult Index(int pagina = 1, string? estado = null, DateTime? desde = null, 
+                                DateTime? hasta = null, int? porTerminar = null)
         {
             try
             {
                 var tamaño = 5;
-                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño);
+                pagina = Math.Max(pagina, 1);
+
+                // Guardar filtros para que la vista
+                ViewBag.Estado = estado;
+                ViewBag.Desde = desde;
+                ViewBag.Hasta = hasta;
+                ViewBag.PorTerminar = porTerminar;
+
+                IList<Reserva> lista;
+                int total;
+
+                bool sinFiltros = string.IsNullOrWhiteSpace(estado)
+                                && !desde.HasValue
+                                && !hasta.HasValue
+                                && !porTerminar.HasValue;
+
+                if (sinFiltros)
+                {
+                    // Camino original
+                    lista = repositorio.ObtenerLista(pagina, tamaño);
+                    total = repositorio.ObtenerCantidad();
+                }
+                else
+                {
+                    // Camino con filtros
+                    lista = repositorio.BuscarConFiltros(estado, desde, hasta, porTerminar, pagina, tamaño);
+                    total = repositorio.ContarConFiltros(estado, desde, hasta, porTerminar);
+                }
+
                 ViewBag.Pagina = pagina;
-                var total = repositorio.ObtenerCantidad();
                 ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
+                ViewBag.TotalRegistros = total;
+
                 if (TempData.ContainsKey("Mensaje"))
                     ViewBag.Mensaje = TempData["Mensaje"];
 
@@ -74,9 +104,18 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                     FechaFin = (DateTime?)TempData["FechaFin"] ?? DateTime.Today.AddDays(1)
                 };
 
-                // Prellenar inmueble
+                // Prellenar inmueble (y datos para el Select2)
                 if (TempData["IdInmueble"] != null)
+                {
                     model.IdInmueble = (int)TempData["IdInmueble"];
+
+                    var inmueble = repositorioInmueble.ObtenerPorId(model.IdInmueble);
+                    ViewBag.InmuebleId = model.IdInmueble;
+                    ViewBag.InmuebleSeleccionado = inmueble?.Direccion;
+
+                    if (inmueble != null && model.MontoDiario <= 0)
+                        model.MontoDiario = inmueble.PrecioPorDia;
+                }
 
                 // Prellenar inquilino (y datos para el Select2)
                 if (TempData["IdInquilino"] != null)
@@ -159,10 +198,15 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 CargarRelacion(entidad);
                 CargarListasDesplegables(entidad.IdInmueble, entidad.IdInquilino);
                 
-                // Select2
+                // Select2 Inmueble
+                var inmuebleSeleccionado = repositorioInmueble.ObtenerPorId(entidad.IdInmueble);
+                ViewBag.InmuebleId = entidad.IdInmueble;
+                ViewBag.InmuebleSeleccionado = inmuebleSeleccionado?.Direccion;
+
+                // Select2 Inquilino
                 var inquilinoSeleccionado = repositorioInquilino.ObtenerPorId(entidad.IdInquilino);
-                ViewBag.InquilinoSeleccionado = inquilinoSeleccionado?.ToString();
                 ViewBag.InquilinoId = entidad.IdInquilino;
+                ViewBag.InquilinoSeleccionado = inquilinoSeleccionado?.ToString();
                 ViewBag.Pagos = repositorioPago.ObtenerPorReserva(id);
                 return View(entidad);
             }
