@@ -94,7 +94,7 @@ html {
 
 .dashboard-card:hover .dashboard-card-actions,
 .dashboard-card:focus-within .dashboard-card-actions {
-  max-height: 180px;
+  max-height: 260px;
   margin-top: 1.25rem;
   opacity: 1;
   pointer-events: auto;

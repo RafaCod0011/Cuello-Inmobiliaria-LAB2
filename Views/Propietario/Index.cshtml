@@ -86,8 +86,8 @@
 								   title="Eliminar">
 									<i class="fa-solid fa-trash-can"></i>
 								</a>
-								<a class="btn btn-secondary disabled" href="#" aria-disabled="true" tabindex="-1"
-								   title="Mis Propiedades">
+								<a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmueble"
+								   asp-route-id="@item.IdPropietario" title="Mis Propiedades">
 									<i class="fa-solid fa-building"></i>
 								</a>
 							</div>

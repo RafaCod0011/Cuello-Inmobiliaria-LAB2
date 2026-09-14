@@ -5,6 +5,12 @@ namespace Cuello_Inmobiliaria_LAB2.Models
     public interface IRepositorioInmueble : IRepositorio<Inmueble>
     {
         IList<Inmueble> ObtenerPorPropietario(int idPropietario);
+        IList<Inmueble> ObtenerPorPropietario(int idPropietario, int pagina, int tamano);
+        int ContarPorPropietario(int idPropietario);  
+        IList<InmuebleReservado> ObtenerMasReservados(int dias, int pagina, int tamano);
+        int ContarMasReservados(int dias); 
+        IList<Inmueble> ObtenerSinReservas(int dias, int pagina, int tamano);
+        int ContarSinReservas(int dias); 
         IList<Inmueble> ObtenerPorTipo(int idTipo);
         IList<Inmueble> ObtenerDisponibles();
         IList<Inmueble> BuscarPorDireccion(string parteDireccion);

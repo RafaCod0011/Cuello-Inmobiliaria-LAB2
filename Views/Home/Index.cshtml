@@ -34,17 +34,17 @@
             <h5>Inmuebles</h5>
             <p>Administración de inmuebles</p>
             <div class="dashboard-card-actions">
-                <button class="dashboard-action" type="button">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Ver disponibles
-                </button>
-                <button class="dashboard-action" type="button">
-                    <i class="fa-solid fa-users"></i>
-                    Ver por propietarios
-                </button>
                 <a asp-controller="Inmueble" asp-action="Index" class="dashboard-action dashboard-action-link">
                     <i class="fa-solid fa-list"></i>
                     Ver todos
+                </a>
+                <a asp-controller="Inmueble" asp-action="MasReservados" class="dashboard-action dashboard-action-link">
+                    <i class="fa-solid fa-star"></i>
+                    Más reservados
+                </a>
+                <a asp-controller="Inmueble" asp-action="SinReservas" class="dashboard-action dashboard-action-link">
+                    <i class="fa-solid fa-house-circle-xmark"></i>
+                    Sin reservas
                 </a>
             </div>
         </div>

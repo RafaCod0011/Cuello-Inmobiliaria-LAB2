@@ -467,6 +467,222 @@ namespace Cuello_Inmobiliaria_LAB2.Models
                 }
             }
         }
+
+        public IList<Inmueble> ObtenerPorPropietario(int idPropietario, int pagina, int tamano)
+        {
+            var res = new List<Inmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT IdInmueble, Direccion, Cupo, PrecioPorDia, PorcentajeReserva, 
+                        Estado, Latitud, Longitud, IdPropietario, IdTipo
+                    FROM Inmueble
+                    WHERE IdPropietario = @idPropietario
+                    ORDER BY IdInmueble
+                    LIMIT @tamano OFFSET @offset
+                ";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@idPropietario", idPropietario);
+                    command.Parameters.AddWithValue("@tamano", tamano);
+                    command.Parameters.AddWithValue("@offset", (pagina - 1) * tamano);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapInmueble(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarPorPropietario(int idPropietario)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = "SELECT COUNT(IdInmueble) FROM Inmueble WHERE IdPropietario = @idPropietario";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@idPropietario", idPropietario);
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+        public IList<InmuebleReservado> ObtenerMasReservados(int dias, int pagina, int tamano)
+        {
+            var res = new List<InmuebleReservado>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT i.IdInmueble, i.Direccion, i.Cupo, i.PrecioPorDia, i.PorcentajeReserva,
+                        i.Estado, i.Latitud, i.Longitud, i.IdPropietario, i.IdTipo,
+                        COUNT(r.IdReserva) AS CantidadReservas,
+                        (SELECT Ruta FROM ImagenInmueble 
+                            WHERE IdInmueble = i.IdInmueble 
+                            ORDER BY Orden LIMIT 1) AS PortadaRuta
+                    FROM Inmueble i
+                    INNER JOIN Reserva r ON i.IdInmueble = r.IdInmueble
+                    WHERE r.FechaCreacion >= DATE_SUB(CURDATE(), INTERVAL @dias DAY)
+                    GROUP BY i.IdInmueble, i.Direccion, i.Cupo, i.PrecioPorDia, i.PorcentajeReserva,
+                            i.Estado, i.Latitud, i.Longitud, i.IdPropietario, i.IdTipo
+                    ORDER BY CantidadReservas DESC, i.Direccion ASC
+                    LIMIT @tamano OFFSET @offset
+                ";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dias", dias);
+                    command.Parameters.AddWithValue("@tamano", tamano);
+                    command.Parameters.AddWithValue("@offset", (pagina - 1) * tamano);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var item = new InmuebleReservado
+                        {
+                            IdInmueble = reader.GetInt32("IdInmueble"),
+                            Direccion = reader.GetString("Direccion"),
+                            Cupo = reader.GetInt32("Cupo"),
+                            PrecioPorDia = reader.GetDecimal("PrecioPorDia"),
+                            PorcentajeReserva = reader.GetDecimal("PorcentajeReserva"),
+                            Estado = Enum.Parse<EstadoInmueble>(reader.GetString("Estado")),
+                            Latitud = reader.IsDBNull(reader.GetOrdinal("Latitud")) ? null : reader.GetDecimal("Latitud"),
+                            Longitud = reader.IsDBNull(reader.GetOrdinal("Longitud")) ? null : reader.GetDecimal("Longitud"),
+                            IdPropietario = reader.GetInt32("IdPropietario"),
+                            IdTipo = reader.GetInt32("IdTipo"),
+                            CantidadReservas = reader.GetInt32("CantidadReservas")
+                        };
+
+                        // Portada
+                        if (!reader.IsDBNull(reader.GetOrdinal("PortadaRuta")))
+                        {
+                            item.Imagenes = new List<ImagenInmueble>
+                            {
+                                new ImagenInmueble
+                                {
+                                    IdInmueble = item.IdInmueble,
+                                    Ruta = reader.GetString("PortadaRuta"),
+                                    Orden = 0
+                                }
+                            };
+                        }
+
+                        res.Add(item);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarMasReservados(int dias)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT COUNT(DISTINCT i.IdInmueble)
+                    FROM Inmueble i
+                    INNER JOIN Reserva r ON i.IdInmueble = r.IdInmueble
+                    WHERE r.FechaCreacion >= DATE_SUB(CURDATE(), INTERVAL @dias DAY)
+                ";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dias", dias);
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
+        
+        public IList<Inmueble> ObtenerSinReservas(int dias, int pagina, int tamano)
+        {
+            var res = new List<Inmueble>();
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT i.IdInmueble, i.Direccion, i.Cupo, i.PrecioPorDia, i.PorcentajeReserva,
+                        i.Estado, i.Latitud, i.Longitud, i.IdPropietario, i.IdTipo,
+                        (SELECT Ruta FROM ImagenInmueble 
+                            WHERE IdInmueble = i.IdInmueble 
+                            ORDER BY Orden LIMIT 1) AS PortadaRuta
+                    FROM Inmueble i
+                    LEFT JOIN Reserva r ON i.IdInmueble = r.IdInmueble
+                        AND r.FechaCreacion >= DATE_SUB(CURDATE(), INTERVAL @dias DAY)
+                    WHERE r.IdReserva IS NULL
+                    ORDER BY i.Direccion ASC
+                    LIMIT @tamano OFFSET @offset
+                ";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dias", dias);
+                    command.Parameters.AddWithValue("@tamano", tamano);
+                    command.Parameters.AddWithValue("@offset", (pagina - 1) * tamano);
+
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var item = new Inmueble
+                        {
+                            IdInmueble = reader.GetInt32("IdInmueble"),
+                            Direccion = reader.GetString("Direccion"),
+                            Cupo = reader.GetInt32("Cupo"),
+                            PrecioPorDia = reader.GetDecimal("PrecioPorDia"),
+                            PorcentajeReserva = reader.GetDecimal("PorcentajeReserva"),
+                            Estado = Enum.Parse<EstadoInmueble>(reader.GetString("Estado")),
+                            Latitud = reader.IsDBNull(reader.GetOrdinal("Latitud")) ? null : reader.GetDecimal("Latitud"),
+                            Longitud = reader.IsDBNull(reader.GetOrdinal("Longitud")) ? null : reader.GetDecimal("Longitud"),
+                            IdPropietario = reader.GetInt32("IdPropietario"),
+                            IdTipo = reader.GetInt32("IdTipo")
+                        };
+
+                        // Portada
+                        if (!reader.IsDBNull(reader.GetOrdinal("PortadaRuta")))
+                        {
+                            item.Imagenes = new List<ImagenInmueble>
+                            {
+                                new ImagenInmueble
+                                {
+                                    IdInmueble = item.IdInmueble,
+                                    Ruta = reader.GetString("PortadaRuta"),
+                                    Orden = 0
+                                }
+                            };
+                        }
+
+                        res.Add(item);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public int ContarSinReservas(int dias)
+        {
+            using (var connection = new MySqlConnection(connectionString))
+            {
+                string sql = @"
+                    SELECT COUNT(DISTINCT i.IdInmueble)
+                    FROM Inmueble i
+                    LEFT JOIN Reserva r ON i.IdInmueble = r.IdInmueble
+                        AND r.FechaCreacion >= DATE_SUB(CURDATE(), INTERVAL @dias DAY)
+                    WHERE r.IdReserva IS NULL
+                ";
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@dias", dias);
+                    connection.Open();
+                    return Convert.ToInt32(command.ExecuteScalar());
+                }
+            }
+        }
         
         // Mapear desde IDataReader
         private Inmueble MapInmueble(MySqlDataReader reader)

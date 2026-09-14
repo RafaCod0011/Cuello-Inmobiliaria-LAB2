@@ -1,124 +1,70 @@
 @model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.Inmueble>
 
 @{
-    ViewData["Title"] = "Inmuebles";
+    ViewData["Title"] = "Inmuebles sin reservas";
     var Pagina = ViewBag.Pagina ?? 1;
     var TotalPaginas = ViewBag.TotalPaginas ?? 1;
-
-    var tipos = (IList<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>)ViewBag.Tipos
-                ?? new List<Cuello_Inmobiliaria_LAB2.Models.TipoInmueble>();
-    var busquedaActual = ViewBag.Busqueda as string;
-    var estadoActual = ViewBag.Estado as string;
-    var idTipoActual = ViewBag.IdTipo as int?;
+    var dias = (int?)ViewBag.Dias ?? 30;
     var totalRegistros = (int?)ViewBag.TotalRegistros ?? 0;
 
-    var hayFiltros = !string.IsNullOrWhiteSpace(busquedaActual)
-                     || !string.IsNullOrWhiteSpace(estadoActual)
-                     || idTipoActual.HasValue;
+    var opcionesDias = new[] { 30, 60, 90, 180, 365 };
 }
 
 <section class="index-page">
     <header class="index-header">
         <div>
-            <p class="index-eyebrow">Gestión de inmuebles</p>
-            <h1>Inmuebles</h1>
-            <p class="index-description">Administre las propiedades registradas en el sistema.</p>
+            <p class="index-eyebrow">Informe</p>
+            <h1>Inmuebles sin reservas</h1>
+            <p class="index-description">
+                Propiedades que no tuvieron reservas en los últimos <strong>@dias días</strong>
+                (@totalRegistros en total)
+            </p>
         </div>
-        <a class="btn btn-success index-create-button" asp-action="Create">
-            <i class="fa-solid fa-plus" aria-hidden="true"></i><span>Nuevo inmueble</span>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Inmuebles
         </a>
     </header>
 
-    @if (ViewBag.Mensaje != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @ViewBag.Mensaje
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <!-- Filtros -->
     <div class="index-table-wrapper mb-3" style="padding: 1rem;">
-        <form asp-action="Index" method="get" class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label for="busqueda" class="form-label">Dirección</label>
-                <input type="text" id="busqueda" name="busqueda" class="form-control"
-                       placeholder="Buscar por dirección..." value="@busquedaActual" />
-            </div>
-            <div class="col-md-2">
-                <label for="estado" class="form-label">Estado</label>
-                <select id="estado" name="estado" class="form-control">
-                    <option value="">Todos</option>
-                    @if (estadoActual == "Activo")
+        <form asp-action="SinReservas" method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="dias" class="form-label">Período</label>
+                <select id="dias" name="dias" class="form-control">
+                    @foreach (var d in opcionesDias)
                     {
-                        <option value="Activo" selected>Activo</option>
-                    }
-                    else
-                    {
-                        <option value="Activo">Activo</option>
-                    }
-                    @if (estadoActual == "Suspendido")
-                    {
-                        <option value="Suspendido" selected>Suspendido</option>
-                    }
-                    else
-                    {
-                        <option value="Suspendido">Suspendido</option>
+                        if (d == dias)
+                        {
+                            <option value="@d" selected>Últimos @d días</option>
+                        }
+                        else
+                        {
+                            <option value="@d">Últimos @d días</option>
+                        }
                     }
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="idTipo" class="form-label">Tipo</label>
-                <select id="idTipo" name="idTipo" class="form-control">
-                    <option value="">Todos</option>
-                    @foreach (var t in tipos)
-                    {
-                        if (idTipoActual == t.IdTipo)
-                        {
-                            <option value="@t.IdTipo" selected>@t.Nombre</option>
-                        }
-                        else
-                        {
-                            <option value="@t.IdTipo">@t.Nombre</option>
-                        }
-                    }
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
                 <button type="submit" class="btn btn-success w-100">
-                    <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
+                    <i class="fa-solid fa-filter me-1"></i> Aplicar
                 </button>
-                <a asp-action="Index" class="btn btn-secondary w-100">
-                    <i class="fa-solid fa-eraser me-1"></i> Limpiar
-                </a>
             </div>
         </form>
-        @if (hayFiltros)
-        {
-            <small class="text-muted d-block mt-2">
-                Mostrando @totalRegistros resultado(s) para los filtros aplicados.
-            </small>
-        }
     </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">
-            @(hayFiltros
-                ? "No se encontraron inmuebles con los filtros aplicados."
-                : "No hay inmuebles registrados.")
+        <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            Todos los inmuebles tuvieron reservas en los últimos @dias días.
         </div>
     }
     else
     {
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            Hay <strong>@totalRegistros inmueble(s)</strong> sin reservas en los últimos @dias días.
+        </div>
+
         <div class="property-grid">
             @foreach (var item in Model)
             {
@@ -170,12 +116,17 @@
                                 <dd>@item.PorcentajeReserva.ToString("0.##")%</dd>
                             </div>
                             <div>
-                                <dt>Latitud</dt>
-                                <dd>@(item.Latitud?.ToString("0.000000") ?? "No disponible")</dd>
-                            </div>
-                            <div>
-                                <dt>Longitud</dt>
-                                <dd>@(item.Longitud?.ToString("0.000000") ?? "No disponible")</dd>
+                                <dt>Ubicación</dt>
+                                <dd>
+                                    @if (item.Latitud.HasValue && item.Longitud.HasValue)
+                                    {
+                                        <text>@item.Latitud.Value.ToString("0.0000"), @item.Longitud.Value.ToString("0.0000")</text>
+                                    }
+                                    else
+                                    {
+                                        <text>No disponible</text>
+                                    }
+                                </dd>
                             </div>
                         </dl>
                         <div class="property-actions" role="group" aria-label="Acciones del inmueble">
@@ -187,13 +138,9 @@
                                title="Editar inmueble">
                                 <i class="fa-solid fa-pen" aria-hidden="true"></i><span>Editar</span>
                             </a>
-                            <a class="btn btn-warning" asp-action="Imagenes" asp-route-id="@item.IdInmueble"
-                               title="Gestionar imágenes">
-                                <i class="fa-solid fa-images" aria-hidden="true"></i>
-                            </a>
-                            <a class="btn btn-danger" asp-action="Eliminar" asp-route-id="@item.IdInmueble"
-                               title="Eliminar inmueble">
-                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                            <a class="btn btn-secondary" asp-action="PorPropietario" asp-controller="Inmueble"
+                               asp-route-id="@item.IdPropietario" title="Ver otros inmuebles del propietario">
+                                <i class="fa-solid fa-building" aria-hidden="true"></i>
                             </a>
                         </div>
                     </div>
@@ -207,9 +154,8 @@
                 @if (Pagina > 1)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina - 1)"
-                           asp-route-busqueda="@busquedaActual" asp-route-estado="@estadoActual"
-                           asp-route-idTipo="@idTipoActual" aria-label="Anterior">
+                        <a class="page-link" asp-action="SinReservas" asp-route-dias="@dias" asp-route-pagina="@(Pagina - 1)"
+                           aria-label="Anterior">
                             <i class="fa-solid fa-angles-left"></i>
                         </a>
                     </li>
@@ -224,17 +170,15 @@
                 @for (int i = 1; i <= TotalPaginas; i++)
                 {
                     <li class="page-item @(i == Pagina ? "active" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-busqueda="@busquedaActual"
-                           asp-route-estado="@estadoActual" asp-route-idTipo="@idTipoActual">@i</a>
+                        <a class="page-link" asp-action="SinReservas" asp-route-dias="@dias" asp-route-pagina="@i">@i</a>
                     </li>
                 }
 
                 @if (Pagina < TotalPaginas)
                 {
                     <li class="page-item">
-                        <a class="page-link" asp-action="Index" asp-route-pagina="@(Pagina + 1)"
-                           asp-route-busqueda="@busquedaActual" asp-route-estado="@estadoActual"
-                           asp-route-idTipo="@idTipoActual" aria-label="Siguiente">
+                        <a class="page-link" asp-action="SinReservas" asp-route-dias="@dias" asp-route-pagina="@(Pagina + 1)"
+                           aria-label="Siguiente">
                             <i class="fa-solid fa-angles-right"></i>
                         </a>
                     </li>

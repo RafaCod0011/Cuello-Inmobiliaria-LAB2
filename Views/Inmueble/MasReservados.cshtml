@@ -1,0 +1,168 @@
+@model IEnumerable<Cuello_Inmobiliaria_LAB2.Models.InmuebleReservado>
+
+@{
+    ViewData["Title"] = "Inmuebles más reservados";
+    var Pagina = ViewBag.Pagina ?? 1;
+    var TotalPaginas = ViewBag.TotalPaginas ?? 1;
+    var dias = (int?)ViewBag.Dias ?? 365;
+    var totalRegistros = (int?)ViewBag.TotalRegistros ?? 0;
+
+    var opcionesDias = new[] { 30, 60, 90, 180, 365 };
+}
+
+<section class="index-page">
+    <header class="index-header">
+        <div>
+            <p class="index-eyebrow">Informe</p>
+            <h1>Inmuebles más reservados</h1>
+            <p class="index-description">
+                Ranking de propiedades con más reservas en los últimos <strong>@dias días</strong>
+                (@totalRegistros en total)
+            </p>
+        </div>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Inmuebles
+        </a>
+    </header>
+
+    <div class="index-table-wrapper mb-3" style="padding: 1rem;">
+        <form asp-action="MasReservados" method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label for="dias" class="form-label">Período</label>
+                <select id="dias" name="dias" class="form-control">
+                    @foreach (var d in opcionesDias)
+                    {
+                        if (d == dias)
+                        {
+                            <option value="@d" selected>Últimos @d días</option>
+                        }
+                        else
+                        {
+                            <option value="@d">Últimos @d días</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fa-solid fa-filter me-1"></i> Aplicar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No hay inmuebles con reservas en los últimos @dias días.
+        </div>
+    }
+    else
+    {
+        <div class="index-table-wrapper">
+            <table class="table index-table reservation-index-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Inmueble</th>
+                        <th>Tipo</th>
+                        <th>Propietario</th>
+                        <th>Precio por día</th>
+                        <th class="text-center">Reservas</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var posicion = (Pagina - 1) * 5 + 1;
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-success">@posicion</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (item.Imagenes != null && item.Imagenes.Any())
+                                    {
+                                        <img src="@item.Imagenes.First().Ruta" alt="Portada"
+                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />
+                                    }
+                                    <div>
+                                        <strong>@item.Direccion</strong>
+                                        <br />
+                                        <small class="text-muted">Código #@item.IdInmueble</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@(item.Tipo?.Nombre ?? "Sin tipo")</td>
+                            <td>@(item.Propietario?.ToString() ?? "Sin propietario")</td>
+                            <td>@item.PrecioPorDia.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary fs-6">@item.CantidadReservas</span>
+                            </td>
+                            <td>
+                                <div class="index-actions" role="group" aria-label="Acciones del inmueble">
+                                    <a class="btn btn-info btn-sm" asp-action="Ver" asp-route-id="@item.IdInmueble"
+                                       title="Ver inmueble">
+                                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a class="btn btn-secondary btn-sm" asp-action="PorPropietario" asp-controller="Inmueble"
+                                       asp-route-id="@item.IdPropietario" title="Ver otros inmuebles del propietario">
+                                        <i class="fa-solid fa-building" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        posicion++;
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                @if (Pagina > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="MasReservados" asp-route-dias="@dias" asp-route-pagina="@(Pagina - 1)"
+                           aria-label="Anterior">
+                            <i class="fa-solid fa-angles-left"></i>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+                    </li>
+                }
+
+                @for (int i = 1; i <= TotalPaginas; i++)
+                {
+                    <li class="page-item @(i == Pagina ? "active" : "")">
+                        <a class="page-link" asp-action="MasReservados" asp-route-dias="@dias" asp-route-pagina="@i">@i</a>
+                    </li>
+                }
+
+                @if (Pagina < TotalPaginas)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="MasReservados" asp-route-dias="@dias" asp-route-pagina="@(Pagina + 1)"
+                           aria-label="Siguiente">
+                            <i class="fa-solid fa-angles-right"></i>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</section>

@@ -303,6 +303,119 @@ namespace Cuello_Inmobiliaria_LAB2.Controllers
                 return Json(new List<object>());
             }
         }
+
+        // GET: Inmueble/PorPropietario/5
+        public ActionResult PorPropietario(int id, int pagina = 1)
+        {
+            try
+            {
+                var propietario = repositorioPropietario.ObtenerPorId(id);
+                if (propietario == null)
+                    return NotFound();
+
+                var tamaño = 5;
+                pagina = Math.Max(pagina, 1);
+
+                var lista = repositorio.ObtenerPorPropietario(id, pagina, tamaño);
+                var total = repositorio.ContarPorPropietario(id);
+
+                ViewBag.PropietarioId = id;
+                ViewBag.PropietarioNombre = propietario.ToString();
+                ViewBag.Pagina = pagina;
+                ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
+                ViewBag.TotalRegistros = total;
+
+                // Cargar relaciones
+                CargarRelaciones(lista);
+                CargarPortadas(lista);
+
+                return View(lista);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en PorPropietario de Inmueble");
+                throw;
+            }
+        }
+
+        // GET: Inmueble/MasReservados?dias=365&pagina=1
+        public ActionResult MasReservados(int? dias, int pagina = 1)
+        {
+            try
+            {
+                var tamaño = 5;
+                pagina = Math.Max(pagina, 1);
+
+                // Validar días
+                var diasValidos = new[] { 30, 60, 90, 180, 365 };
+                var diasFiltro = dias.HasValue && diasValidos.Contains(dias.Value)
+                                ? dias.Value
+                                : 365;
+
+                var lista = repositorio.ObtenerMasReservados(diasFiltro, pagina, tamaño);
+                var total = repositorio.ContarMasReservados(diasFiltro);
+
+                ViewBag.Dias = diasFiltro;
+                ViewBag.Pagina = pagina;
+                ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
+                ViewBag.TotalRegistros = total;
+
+                // Cargar propietario y tipo 
+                foreach (var item in lista)
+                {
+                    if (item.IdPropietario > 0 && item.Propietario == null)
+                        item.Propietario = repositorioPropietario.ObtenerPorId(item.IdPropietario);
+                    if (item.IdTipo > 0 && item.Tipo == null)
+                        item.Tipo = repositorioTipo.ObtenerPorId(item.IdTipo);
+                }
+
+                return View(lista);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en MasReservados");
+                throw;
+            }
+        }
+
+        // GET: Inmueble/SinReservas?dias=30&pagina=1
+        public ActionResult SinReservas(int? dias, int pagina = 1)
+        {
+            try
+            {
+                var tamaño = 5;
+                pagina = Math.Max(pagina, 1);
+
+                var diasValidos = new[] { 30, 60, 90, 180, 365 };
+                var diasFiltro = dias.HasValue && diasValidos.Contains(dias.Value)
+                                ? dias.Value
+                                : 30;
+
+                var lista = repositorio.ObtenerSinReservas(diasFiltro, pagina, tamaño);
+                var total = repositorio.ContarSinReservas(diasFiltro);
+
+                ViewBag.Dias = diasFiltro;
+                ViewBag.Pagina = pagina;
+                ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
+                ViewBag.TotalRegistros = total;
+
+                // Cargar propietario y tipo
+                foreach (var item in lista)
+                {
+                    if (item.IdPropietario > 0 && item.Propietario == null)
+                        item.Propietario = repositorioPropietario.ObtenerPorId(item.IdPropietario);
+                    if (item.IdTipo > 0 && item.Tipo == null)
+                        item.Tipo = repositorioTipo.ObtenerPorId(item.IdTipo);
+                }
+
+                return View(lista);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en SinReservas");
+                throw;
+            }
+        }
         // Cargar listas desplegables para Propietarios y Tipos de Inmueble.
 
         private void CargarListasDesplegables(int? propietarioSeleccionado = null, int? tipoSeleccionado = null)
